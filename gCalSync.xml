@@ -1,0 +1,343 @@
+<?xml version="1.0"?>
+<!DOCTYPE modification SYSTEM "http://www.simplemachines.org/xml/modification">
+<modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
+	
+	<id>kriation:gCalSync</id>
+	<version>1.0.1</version>
+
+	<!-- ************************************* -->
+	<!-- gCalSync Administrative functionality -->
+	<!-- ************************************* -->
+	<file name="$sourcedir/ManageCalendar.php">
+		<operation>
+			<search position="before" whitespace="loose">
+				<![CDATA['settings' => 'ModifySettings']]>
+			</search>
+			<add>
+				<![CDATA[, 'gCalSettings' => 'ModifyGCAL']]>
+			</add>
+		</operation>
+
+		<operation>
+			<search position="before" whitespace="loose">
+				<![CDATA['tabs' => array(]]>
+			</search>
+			<add>
+				<![CDATA['gCalSettings' => array(
+					'title' => "gCalSync Settings",
+					'description' => "Modify gCalSync Settings",
+					'href' => $scripturl . '?action=managecalendar;sa=gCalSettings',
+					),]]>
+			</add>
+		</operation>
+
+		<operation>
+			<search position="end" />
+			<add>
+				<![CDATA[//Function that handles gCalSync Settings
+				function ModifyGCAL()
+				{
+					// What global variables do we need here?
+					global $context, $sourcedir;
+
+				    loadTemplate('ManageCalendar');
+
+				    $context['page_title'] = "Modify gCalSync Settings";
+				    $context['sub_template'] = 'modify_gCal';
+
+					// Form has been submitted! Let's process! :-D
+					if( isset( $_POST['sc'] ))
+					{
+						// Always protect yourself!
+						checkSession();
+
+						// Easier than I thought...
+						updateSettings( array(
+									'gCal_user' => $_POST['gCal_user'],
+									'gCal_pass' => $_POST['gCal_pass'] ));
+						updateStats( 'calendar' );
+
+						// Time to exit!
+						redirectexit( 'action=managecalendar;sa=gCalSettings');
+					}
+				}]]>
+			</add>
+		</operation>
+	</file>
+
+	<file name="$themedir/ManageCalendar.template.php">
+		<operation>
+			<search position="end" />
+			<add>
+				<![CDATA[//gCalSync Settings Template
+				function template_modify_gCal()
+				{
+					global $context, $scripturl, $sc, $modSettings, $txt;
+					echo '
+						<!-- Totally borrowed from template_modify_settings() -->
+						<form acton=', $scripturl, '?action=managecalendar;sa=gCalSettings" method="post" accept-charset="', $context['character_set'], '"> 
+						<table border="0" cellspacing="0" cellpadding="4" align="center" th="80%" class="tborder">
+							<tr class="titlebg">
+								<td colspan="2">gCalSync Settings</td>
+							</tr>
+							<tr class="windowbg2">
+								<td align="right">Google Calendar Username</label>:</td>
+								<td><input type="text" name="gCal_user" value="', $modSettings['gCal_user'], '" size="40" /></td>
+							</tr>
+							<tr class="windowbg2">
+								<td align="right">Google Calendar Password</label>:</td>
+								<td><input type="password" name="gCal_pass" value="', $modSettings['gCal_pass'], '" size="40" /></td>
+							</tr>
+							<tr class="windowbg2">
+								<td align="right" colspan="2">
+									<input type="submit" value="', $txt['save_settings'], '" />
+								</td>
+							</tr>
+						</table>
+						<input type="hidden" name="sc" value="', $context['session_id'], '" />
+						</form>';
+				}]]>
+			</add>
+		</operation>
+	</file>
+	
+	<!-- ************************************* -->
+	<!-- gCalSync Runtime functionality -->
+	<!-- ************************************* -->
+
+	<!-- For event Insertion -->
+	<file name="$sourcedir/Calendar.php">
+		<operation>
+			<search position="after" whitespace="loose">
+				<![CDATA[// Add special chars to the title.]]>
+			</search>
+			<add>
+				<![CDATA[global $sourcedir, $boardurl; 
+				/* gCalSync: Bringing it in... */
+				require_once( $sourcedir . '/gCalSync.php' );]]>
+			</add>
+		</operation>
+		
+		<operation>
+			<search position="after" whitespace="loose">
+				<![CDATA[// Insert the event!]]>
+			</search>
+			<add>
+				<![CDATA[
+				    /* Grab a couple of useful values from $modSettings */
+				    if( !empty($modSettings['gCal_user']) &&
+							!empty($modSettings['gCal_pass'] ) )
+				    {
+				        $gUser = $modSettings['gCal_user'];
+				        $gPass = $modSettings['gCal_pass'];
+				    }
+    				else
+	    			{
+					die( 'gCalSync: gUser and/or gPass are not in the settings table within the database!' );
+					}]]>
+			</add>
+		</operation>
+
+		<operation>
+<search position="before" whitespace="loose"><![CDATA[        VALUES ($id_board, $id_topic, SUBSTRING('$title', 1, 48), $id_member, '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year)) . "', '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400) . "')", __FILE__, __LINE__);]]></search>
+			<add>
+				<![CDATA[
+					/* Initializing the gCalSync for Google Calendar
+					 * Synchronization
+					 */
+				   	$gCalObj = gCalSync_Init( $gUser, $gPass );
+
+					/* Inserting the event into Google Calendar */
+					gCalSync_Insert( $db_prefix, $boardurl, $gCalObj, $title, $month, $day, $year, $span );
+				]]>
+			</add>
+		</operation>
+
+		<!-- For event editting and deletion -->
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[    global $modSettings, $topic, $ID_MEMBER, $func;]]></search>
+			<add><![CDATA[global $boardurl;
+				/* gCalSync: Bringing it in... */
+				require_once( $sourcedir . '/gCalSync.php' );
+			    /* Grab a couple of useful values from $modSettings */
+			    if( !empty($modSettings['gCal_user']) &&
+					!empty($modSettings['gCal_pass'] ) )
+			    {
+			        $gUser = $modSettings['gCal_user'];
+			        $gPass = $modSettings['gCal_pass'];
+			    }
+   				else
+    			{
+					die( 'gCalSync: gUser and/or gPass are not in the settings table within the database!' );
+				}]]></add>
+		</operation>
+
+		<!-- For event deletion -->
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[        elseif (isset($_REQUEST['deleteevent']))]]></search>
+			<add><![CDATA[
+		{
+		/* Initializing the gCalSync for Google Calendar Synchronization */
+        $gCalObj = gCalSync_Init( $gUser, $gPass );
+
+        /* Deleting the event from Google Calendar */
+        gCalSync_Remove( $db_prefix, $gCalObj, $_REQUEST['eventid'] ); 
+		]]></add>
+        </operation>
+
+		<operation>
+			<search position="after" whitespace="loose"><![CDATA[        // ... or just update it?]]></search>
+			<add><![CDATA[
+			}
+			]]></add>
+		</operation>
+
+		<!-- For event update -->
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
+			<add><![CDATA[
+		/* Initializing the gCalSync for Google Calendar Synchronization */
+        $gCalObj = gCalSync_Init( $gUser, $gPass );
+
+		/* Update the event in Google Calendar */
+			gCalSync_Update( $db_prefix, $gCalObj, $_REQUEST['eventid'],
+							$_REQUEST['evtitle'], $_REQUEST['month'],
+							$_REQUEST['day'], $_REQUEST['year'],
+							$span );]]></add>
+		</operation>
+	</file>
+
+	<file name="$sourcedir/Post.php">
+		<!-- For event editting and deletion -->
+		<operation>
+			<search position="after" whitespace="loose"><![CDATA[    // Previewing? Go back to start.]]></search>
+			<add><![CDATA[	global $boardurl;
+				/* gCalSync: Bringing it in... */
+				require_once( $sourcedir . '/gCalSync.php' );
+			    /* Grab a couple of useful values from $modSettings */
+			    if( !empty($modSettings['gCal_user']) &&
+					!empty($modSettings['gCal_pass'] ) )
+			    {
+			        $gUser = $modSettings['gCal_user'];
+			        $gPass = $modSettings['gCal_pass'];
+			    }
+   				else
+    			{
+					die( 'gCalSync: gUser and/or gPass are not in the settings table within the database!' );
+				}
+				]]></add>
+		</operation>
+		
+		<!-- For event deletion -->
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[        if (isset($_REQUEST['deleteevent']))]]></search>
+			<add><![CDATA[
+		{
+		/* Initializing the gCalSync for Google Calendar Synchronization */
+        $gCalObj = gCalSync_Init( $gUser, $gPass );
+
+        /* Deleting the event from Google Calendar */
+        gCalSync_Remove( $db_prefix, $gCalObj, $_REQUEST['eventid'] ); 
+		]]></add>
+        </operation>
+
+		<operation>
+			<search position="after" whitespace="loose"><![CDATA[        // ... or just update it?]]></search>
+			<add><![CDATA[
+			}
+			]]></add>
+		</operation>
+	
+		<!-- For event update -->
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
+			<add><![CDATA[
+		/* Initializing the gCalSync for Google Calendar Synchronization */
+        $gCalObj = gCalSync_Init( $gUser, $gPass );
+
+		/* Update the event in Google Calendar */
+			gCalSync_Update( $db_prefix, $gCalObj, $_REQUEST['eventid'],
+							$_REQUEST['evtitle'], $_REQUEST['month'],
+							$_REQUEST['day'], $_REQUEST['year'],
+							$span );
+			]]></add>
+		</operation>
+	</file>
+
+	<file name="$sourcedir/RemoveTopic.php">
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[    global $db_prefix, $sourcedir, $modSettings;]]></search>
+			<add><![CDATA[
+	global $boardurl;
+	/* gCalSync: Bringing it in... */
+	require_once( $sourcedir . '/gCalSync.php' );
+	/* Grab a couple of useful values from $modSettings */
+	if( !empty($modSettings['gCal_user']) &&
+		!empty($modSettings['gCal_pass'] ) )
+	{
+		$gUser = $modSettings['gCal_user'];
+		$gPass = $modSettings['gCal_pass'];
+    }
+	else
+   	{
+		die( 'gCalSync: gUser and/or gPass are not in the settings table within the database!' );
+	}
+			]]></add>
+		</operation>
+	
+		<operation>
+			<search position="before" whitespace="loose"><![CDATA[    // Delete anything related to the topic.]]></search>
+			<add><![CDATA[
+	$result = db_query( "SELECT ID_EVENT FROM {$db_prefix}calendar
+        WHERE ID_TOPIC $condition", __FILE__, __LINE__ );
+    while( $row = mysql_fetch_assoc( $result ) )
+    {   
+        $gCalEventID = $row[ 'ID_EVENT' ];
+    }
+    mysql_free_result( $result );
+	
+	/* Delete entry from Google Calendar only if a calendar entry exists */
+	if( !empty( $gCalEventID ) )
+	{
+		/* Initializing the gCalSync for Google Calendar Synchronization */
+	    $gCalObj = gCalSync_Init( $gUser, $gPass );
+
+	    /* Deleting the event from Google Calendar */
+	    gCalSync_Remove( $db_prefix, $gCalObj, $gCalEventID );
+	}
+			]]></add>
+		</operation>
+
+<!-- 
+/* Let's not remove the gCalID from the DB or Google when a topic is
+ * 'recycled'. I'm leaving this here because I might want to re-visit 
+ * this later
+ */
+		<operation>
+			<search position="after" whitespace="loose"><![CDATA[            // Move the topics to the recycle board.]]></search>
+			<add><![CDATA[
+			/* Looping through $recycleTopics and removing their associated
+			 * events from gCal */
+			foreach( $recycleTopics as $deadTopic )
+			{
+				$result = db_query( "SELECT ID_EVENT FROM {$db_prefix}calendar WHERE ID_TOPIC = $deadTopic", __FILE__, __LINE__ );
+				while( $row = mysql_fetch_assoc( $result ) )
+				{
+					$deadEventID = $row[ 'ID_EVENT' ];
+				}
+				mysql_free_result( $result );
+
+				/* Delete entry from Google Calendar if it exists */
+				if( !empty( $deadEventID ) )
+				{
+					$gCalObj = gCalSync_Init( $gUser, $gPass );
+					gCalSync_Remove( $db_prefix, $gCalObj, $deadEventID );
+				}
+			}
+			]]></add>
+		</operation>
+-->
+	</file>
+
+
+</modification>

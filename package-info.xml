@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
+<package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
+
+	<id>kriation:gCalSync</id>
+	<name>gCalSync</name>
+	<version>1.0.1</version>
+	<type>modification</type>
+	
+	<install for="1.1.11">
+		<readme type="file">read.me</readme>
+		<code type="file">gCalSync-install.php</code>
+		<require-file name="gCalSync.php" destination="$sourcedir" />
+		<modification>gCalSync.xml</modification>
+	</install>
+	
+	<uninstall for="1.1.11">
+		<code type="file">gCalSync-uninstall.php</code>
+		<remove-file name="$sourcedir/gCalSync.php" />
+		<modification reverse="true">gCalSync.xml</modification>
+	</uninstall>
+
+</package-info>
