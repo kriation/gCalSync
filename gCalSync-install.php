@@ -1,4 +1,27 @@
 <?php
+/************************************************************************
+* gCalSync-install.php							*
+*************************************************************************
+* gCalSync 								*
+* Copyright 2009-2010 Armen Kaleshian <armen@kriation.com>		*
+* License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
+*									*
+* An enhancement for SMF to synchronize forum calendar entries with a	*
+* Google Calendar.							*
+* ********************************************************************* *
+* This program is free software: you can redistribute it and/or modify	*
+* it under the terms of the GNU General Public License as published by	*
+* the Free Software Foundation, either version 3 of the License, or	*
+* (at your option) any later version.					*
+*									*
+* This program is distributed in the hope that it will be useful,	*
+* but WITHOUT ANY WARRANTY; without even the implied warranty of	*
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		*
+* GNU General Public License for more details.				*
+*									*
+* You should have received a copy of the GNU General Public License	*
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
+************************************************************************/
 
 /*
  * A number of interesting things are done in here to provide the proper
@@ -11,22 +34,22 @@
  * Table: smf_settings
  * gUser == This is the user account that will be used to connect to Google.
  * gPass == This is the above user account's password.
- * 			Yes I know... it's in the clear. I'll do something fun with it
- *			eventually.
+ * Yes I know... it's in the clear. I'll do something fun with it 
+ * eventually.
  *
  * Addition
  * --------
  * Table: smf_gCal
  * Columns:
  * 	ID_EVENT == Corresponds to the event ID from smf_calendar
- *	gCal_ID == This is the Google calendar entry ID returned from Google 
- *				when creating a new calendar entry. This value is also 
- *				used to edit the entry once it has been created.
+ *	gCal_ID == This is the Google calendar entry ID returned from Google
+ *	when creating a new calendar entry. This value is also 
+ *	used to edit the entry once it has been created.
  *
  * TODO
  * ----
  * > Add functionality to synchronize pre-existing entries with Google 
- *		during the setup process
+ *	during the setup process
  * > Add functionality to input Google User/Pass during the setup process
  * > Encrypt Google Password
 */

@@ -1,11 +1,27 @@
 <?php
-/* ******************** *
- * gCalSync.php			*
- * armen @ kriation.com	*
- * For SMF 1.x			*
- * ********************	*
- * Provides SMF the ability to create events inside a Google Calendar *
-*/
+/************************************************************************
+* gCalSync.php								*
+*************************************************************************
+* gCalSync 								*
+* Copyright 2009-2010 Armen Kaleshian <armen@kriation.com>		*
+* License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
+*									*
+* An enhancement for SMF to synchronize forum calendar entries with a	*
+* Google Calendar.							*
+* ********************************************************************* *
+* This program is free software: you can redistribute it and/or modify	*
+* it under the terms of the GNU General Public License as published by	*
+* the Free Software Foundation, either version 3 of the License, or	*
+* (at your option) any later version.					*
+*									*
+* This program is distributed in the hope that it will be useful,	*
+* but WITHOUT ANY WARRANTY; without even the implied warranty of	*
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		*
+* GNU General Public License for more details.				*
+*									*
+* You should have received a copy of the GNU General Public License	*
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
+************************************************************************/
 
 /* Protecting from bad people */
 if( !defined( 'SMF' ) )
@@ -32,12 +48,11 @@ function gCalSync_Init( $user, $pass )
 
 	/* Attempt to establish a connection to Google */
 	$gClient = Zend_Gdata_ClientLogin::getHttpClient(
-					$user, $pass,
-					Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
+			$user, $pass,
+			Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
 	if( !$gClient )
 	{
-		die( 
-			'gCalSync: Could not connect to the Google Calendar service!' );
+		ie('gCalSync: Could not connect to the Google Calendar service!' );
 	}
 
 	/* Attempt to grab a Google Calendar object */
@@ -52,21 +67,21 @@ function gCalSync_Init( $user, $pass )
 }
 
 /* gCalSync_Insert( SMF Database Prefix, SMF Board URL,
-  							Google Calendar Object,
-   							Event Title,
-							Month,
-							Day,
-							Year,
-							Number of Days )
- *	Connects to Google, and inserts a calendar entry based on the values
- * 	passed to it from within calendarInsertEvent located in the smf
- * 	Calendar.php
- *	After the entry is completed, inserts an entry into the smf_gCal 
- * 	mapping table to associate an smf eventID with a gCal ID returned
- *	from the gCal insert operation
+			Google Calendar Object,
+   			Event Title,
+			Month,
+			Day,
+			Year,
+			Number of Days )
+ * Connects to Google, and inserts a calendar entry based on the values
+ * passed to it from within calendarInsertEvent located in the smf
+ * Calendar.php
+ * After the entry is completed, inserts an entry into the smf_gCal 
+ * mapping table to associate an smf eventID with a gCal ID returned
+ * from the gCal insert operation
 */
 function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month, 
-								$day, $year, $span )
+			$day, $year, $span )
 {
 	if( !$gCal )
 	{
@@ -77,23 +92,23 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	 * valid, let's start working through the magic */
 	$event = $gCal->newEventEntry();
 
-	/* Changing the SMF title to be in a non-HTML Special Character form */
+	/* Changing the SMF title to be in a non-HTML 
+	 * Special Character form */
 	$cleanTitle = un_htmlspecialchars( $title );
  
 	/* Building out the topic link for the Google Calendar entry
 	 * This step is painful, and is a multi-step process until I can
 	 * figure out a a better way.
 	 * 1) Run a select statement on smf_calendar to return the latest 
-	 *		ID_EVENT based on the last insert
-	 * 2) Run another select statement to find out if there's an ID_TOPIC
-	 *		associated with the above returned ID_EVENT
-	 * 3) Finish up by building the topic link and adding it to the Google
-	 *		Calendar entry description
+	 *	ID_EVENT based on the last insert
+	 * 2) Run another select statement to find out if there's an 
+	 *	ID_TOPIC associated with the above returned ID_EVENT
+	 * 3) Finish up by building the topic link and adding it to 
+	 *	the Google Calendar entry description
 	*/
 
 	/* Step 1 */
-	$result = db_query( "SELECT MAX(ID_EVENT) from {$db_prefix}calendar",
-						__FILE__, __LINE__ );
+	$result = db_query( "SELECT MAX(ID_EVENT) from {$db_prefix}calendar", __FILE__, __LINE__ );
 	/* We 'assume' that there's only going to be one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -102,8 +117,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	mysql_free_result( $result );
 
 	/* Step 2 */
-	$result = db_query( "SELECT ID_TOPIC from {$db_prefix}calendar
-							WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	$result = db_query( "SELECT ID_TOPIC from {$db_prefix}calendar WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -122,8 +136,8 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	}
 
 	/* TODO:
-	 * Combine step 1 and 2 into a join to hit the database once, instead
-	 * of twice.
+	 * Combine step 1 and 2 into a join to hit the database once, 
+	 * instead of twice.
 	*/
 
 	/* /me sighs - Let's build the start and end dates... again.
@@ -135,11 +149,9 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	if( $span > 0 )
 		$span++;
 
-	$startDate = strftime( '%Y-%m-%d', 
-							mktime(0, 0, 0, $month, $day, $year) );
-	$endDate = strftime( '%Y-%m-%d', 
-							mktime(0, 0, 0, $month, $day, $year) 
-							+ $span * 86400 );
+	$startDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) );
+	$endDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400 );
+
 	/* TODO:
 	 * It would be nice if we could force specific times to be included
 	 * in the SMF calendar entries, and then use them here to narrow
@@ -171,8 +183,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	/* Use it. */
 	if( $gCal_eventID )
 	{
-		db_query( "INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID)
-					VALUES( $eventID, '$gCal_eventID' )", __FILE__, __LINE__ );
+		db_query( "INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID) VALUES( $eventID, '$gCal_eventID' )", __FILE__, __LINE__ );
 	}
 
 	/* I think we're done. :) */
@@ -195,8 +206,8 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	}
 	
 	/* Retrieve the Google event URL from the smf DB */
-	$result = db_query( "SELECT gCal_ID from {$db_prefix}gCal
-							WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	$result = db_query( "SELECT gCal_ID from {$db_prefix}gCal WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -217,20 +228,19 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	/* That was easy... :) */
 }
 /* gCalSync_Update( SMF Database Prefix, Google Calendar Object,
-   							Event ID
-   							Event Title,
-							Month,
-							Day,
-							Year,
-							Number of Days )
+   			Event ID
+   			Event Title,
+			Month,
+			Day,
+			Year,
+			Number of Days )
  * Again... retrieve the Google Event URL from the smf DB
  * Once we have it, fetch the entry from Google... again.
  * Take the new values (regardless of what they are) and build a new event
  * object
  * Once it's filled, save the event.
 */
-function gCalSync_Update( $db_prefix, $gCal, $eventID, $title, 
-							$month, $day, $year, $span )
+function gCalSync_Update( $db_prefix, $gCal, $eventID, $title, $month, $day, $year, $span )
 {
 	if( !$gCal )
 	{
@@ -238,8 +248,8 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 	}
 	
 	/* Retrieve the Google event URL from the smf DB */
-	$result = db_query( "SELECT gCal_ID from {$db_prefix}gCal
-							WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	$result = db_query( "SELECT gCal_ID from {$db_prefix}gCal WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -257,11 +267,8 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 	/* Build the update object */
 	$event->title = $gCal->newTitle( $title );
 	$when = $gCal->newWhen();
-	$startDate = strftime( '%Y-%m-%d', 
-							mktime(0, 0, 0, $month, $day, $year) );
-	$endDate = strftime( '%Y-%m-%d', 
-							mktime(0, 0, 0, $month, $day, $year) 
-							+ $span * 86400 );
+	$startDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) );
+	$endDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400 );
 	$when->startTime = $startDate;
 	$when->endTime = $endDate;
 	$event->when = array( $when );

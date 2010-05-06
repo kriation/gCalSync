@@ -1,23 +1,48 @@
 <?xml version="1.0"?>
+<!--
+/************************************************************************
+* package-info.xml							*
+*************************************************************************
+* gCalSync 								*
+* Copyright 2009-2010 Armen Kaleshian <armen@kriation.com>		*
+* License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
+*									*
+* An enhancement for SMF to synchronize forum calendar entries with a	*
+* Google Calendar.							*
+* ********************************************************************* *
+* This program is free software: you can redistribute it and/or modify	*
+* it under the terms of the GNU General Public License as published by	*
+* the Free Software Foundation, either version 3 of the License, or	*
+* (at your option) any later version.					*
+*									*
+* This program is distributed in the hope that it will be useful,	*
+* but WITHOUT ANY WARRANTY; without even the implied warranty of	*
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		*
+* GNU General Public License for more details.				*
+*									*
+* You should have received a copy of the GNU General Public License	*
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
+************************************************************************/
+-->
 <!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
 
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
-	<version>1.0.1</version>
 	<type>modification</type>
+	<version>1.0.1</version>
 	
 	<install for="1.1.11">
 		<readme type="file">read.me</readme>
 		<code type="file">gCalSync-install.php</code>
-		<require-file name="gCalSync.php" destination="$sourcedir" />
 		<modification>gCalSync.xml</modification>
+		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</install>
 	
 	<uninstall for="1.1.11">
 		<code type="file">gCalSync-uninstall.php</code>
-		<remove-file name="$sourcedir/gCalSync.php" />
 		<modification reverse="true">gCalSync.xml</modification>
+		<remove-file name="$sourcedir/gCalSync.php" />
 	</uninstall>
 
 </package-info>
