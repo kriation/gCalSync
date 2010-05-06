@@ -67,7 +67,7 @@ if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
 elseif( !defined( 'SMF' ) )
 {
 	die( '<b>No Good:</b> 
-		This is not located in the same location as SMF\'s index.php.' );
+	This is not located in the same location as SMF\'s index.php.' );
 }
 
 // Fix the array into a database compliant form factor
@@ -85,8 +85,9 @@ if( $string != '' )
 	 * after each set of name,value pairs within the parantheses.
 	*/
 	$result = db_query( "INSERT IGNORE INTO {$db_prefix}settings
-						(variable, value) VALUES" .
-						substr( $string, 0, -1 ), __FILE__, __LINE__ );
+				(variable, value) VALUES" .
+				substr( $string, 0, -1 ), 
+				__FILE__, __LINE__ );
 }
 
 // It broke - Shit.
@@ -98,10 +99,10 @@ if( $result === false )
 
 // As long as things went well up there, let's add the new table! :)
 $result = db_query( "CREATE TABLE IF NOT EXISTS {$db_prefix}gCal ( 
-					`ID_EVENT` smallint(5) unsigned NOT NULL, 
-					`gCal_ID` tinytext NOT NULL,
-					PRIMARY KEY (`ID_EVENT`) )",
-				   	__FILE__, __LINE__ ); 
+			`ID_EVENT` smallint(5) unsigned NOT NULL, 
+			`gCal_ID` tinytext NOT NULL,
+			PRIMARY KEY (`ID_EVENT`) )",
+		   	__FILE__, __LINE__ ); 
 
 // It broke - Shit x 2!
 // God knows how/why we got here...

@@ -52,14 +52,16 @@ function gCalSync_Init( $user, $pass )
 			Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
 	if( !$gClient )
 	{
-		ie('gCalSync: Could not connect to the Google Calendar service!' );
+		die('gCalSync: 
+		Could not connect to the Google Calendar service!' );
 	}
 
 	/* Attempt to grab a Google Calendar object */
 	$gCal = new Zend_Gdata_Calendar( $gClient );
 	if( !$gCal )
 	{
-		die( 'gCalSync: Could not establish a Google Calendar object!' );
+		die( 'gCalSync: 
+		Could not establish a Google Calendar object!' );
 	}
 
 	/* Return the Google Calendar object for further usage */
@@ -85,7 +87,8 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 {
 	if( !$gCal )
 	{
-		die( 'gCalSync: Insert - Could not use Google Calendar object!' );
+		die( 'gCalSync: 
+		Insert - Could not use Google Calendar object!' );
 	}
 
 	/* Assuming that the Google Calendar object we were passed is still
@@ -108,7 +111,9 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	*/
 
 	/* Step 1 */
-	$result = db_query( "SELECT MAX(ID_EVENT) from {$db_prefix}calendar", __FILE__, __LINE__ );
+	$result = db_query( 
+		"SELECT MAX(ID_EVENT) from {$db_prefix}calendar", 
+		__FILE__, __LINE__ );
 	/* We 'assume' that there's only going to be one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -117,7 +122,10 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	mysql_free_result( $result );
 
 	/* Step 2 */
-	$result = db_query( "SELECT ID_TOPIC from {$db_prefix}calendar WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	$result = db_query( 
+		"SELECT ID_TOPIC from {$db_prefix}calendar 
+		WHERE ID_EVENT=$eventID", 
+		__FILE__, __LINE__ );
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -149,8 +157,13 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	if( $span > 0 )
 		$span++;
 
-	$startDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) );
-	$endDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400 );
+	$startDate = strftime( 
+			'%Y-%m-%d', 
+			mktime(0, 0, 0, $month, $day, $year) );
+	$endDate = strftime( 
+			'%Y-%m-%d', 
+			mktime(0, 0, 0, $month, $day, $year) 
+				+ $span * 86400 );
 
 	/* TODO:
 	 * It would be nice if we could force specific times to be included
@@ -183,7 +196,10 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	/* Use it. */
 	if( $gCal_eventID )
 	{
-		db_query( "INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID) VALUES( $eventID, '$gCal_eventID' )", __FILE__, __LINE__ );
+		db_query( 
+		"INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID) 
+		VALUES( $eventID, '$gCal_eventID' )",
+	       	__FILE__, __LINE__ );
 	}
 
 	/* I think we're done. :) */
@@ -202,11 +218,15 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 {
 	if( !$gCal )
 	{
-		die( 'gCalSync: Remove - Could not use Google Calendar object!' );
+		die( 'gCalSync: 
+		Remove - Could not use Google Calendar object!' );
 	}
 	
 	/* Retrieve the Google event URL from the smf DB */
-	$result = db_query( "SELECT gCal_ID from {$db_prefix}gCal WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	$result = db_query( 
+		"SELECT gCal_ID from {$db_prefix}gCal 
+		WHERE ID_EVENT=$eventID",
+	       	__FILE__, __LINE__ );
 
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
@@ -223,7 +243,10 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	$gEvent->delete();
 
 	/* This is bad without the above exception handling */
-	db_query( "DELETE FROM {$db_prefix}gCal WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	db_query( 
+		"DELETE FROM {$db_prefix}gCal 
+		WHERE ID_EVENT=$eventID", 
+		__FILE__, __LINE__ );
 
 	/* That was easy... :) */
 }
@@ -240,15 +263,20 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
  * object
  * Once it's filled, save the event.
 */
-function gCalSync_Update( $db_prefix, $gCal, $eventID, $title, $month, $day, $year, $span )
+function gCalSync_Update( $db_prefix, $gCal, $eventID, $title, 
+				$month, $day, $year, $span )
 {
 	if( !$gCal )
 	{
-		die( 'gCalSync: Update - Could not use Google Calendar object!' );
+		die( 'gCalSync: 
+		Update - Could not use Google Calendar object!' );
 	}
 	
 	/* Retrieve the Google event URL from the smf DB */
-	$result = db_query( "SELECT gCal_ID from {$db_prefix}gCal WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	$result = db_query( 
+		"SELECT gCal_ID from {$db_prefix}gCal 
+		WHERE ID_EVENT=$eventID", 
+		__FILE__, __LINE__ );
 
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
@@ -267,8 +295,12 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title, $month, $day, $ye
 	/* Build the update object */
 	$event->title = $gCal->newTitle( $title );
 	$when = $gCal->newWhen();
-	$startDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) );
-	$endDate = strftime( '%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400 );
+	$startDate = strftime( 
+		'%Y-%m-%d', 
+		mktime(0, 0, 0, $month, $day, $year) );
+	$endDate = strftime( 
+		'%Y-%m-%d', 
+		mktime(0, 0, 0, $month, $day, $year) + $span * 86400 );
 	$when->startTime = $startDate;
 	$when->endTime = $endDate;
 	$event->when = array( $when );

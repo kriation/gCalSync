@@ -35,11 +35,14 @@ if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
 elseif( !defined( 'SMF' ) )
 {
 	die( '<b>No Good:</b> 
-		This is not located in the same location as SMF\'s index.php.' );
+	This is not located in the same location as SMF\'s index.php.' );
 }
 
 // Drop the SMF Settings
-$result = db_query( "DELETE FROM {$db_prefix}settings WHERE variable='gCal_user'", __FILE__, __LINE__ );
+$result = db_query( 
+	"DELETE FROM {$db_prefix}settings 
+	WHERE variable='gCal_user'", 
+	__FILE__, __LINE__ );
 
 // It broke - Shit.
 if( $result === false )
@@ -48,7 +51,10 @@ if( $result === false )
 		Delete from settings failed! ');
 }
 
-$result = db_query( "DELETE FROM {$db_prefix}settings WHERE variable='gCal_pass'", __FILE__, __LINE__ );
+$result = db_query( 
+	"DELETE FROM {$db_prefix}settings 
+	WHERE variable='gCal_pass'", 
+	__FILE__, __LINE__ );
 
 // It broke - Shit.
 if( $result === false )
