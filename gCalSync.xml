@@ -28,38 +28,30 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 	
 	<id>kriation:gCalSync</id>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 
 	<!-- ************************************* -->
 	<!-- gCalSync Administrative functionality -->
 	<!-- ************************************* -->
 	<file name="$sourcedir/ManageCalendar.php">
 		<operation>
-			<search position="before" whitespace="loose">
-				<![CDATA['settings' => 'ModifySettings']]>
-			</search>
-			<add>
-				<![CDATA[, 'gCalSettings' => 'ModifyGCAL']]>
-			</add>
+			<search position="before"><![CDATA['settings' => 'ModifySettings']]></search>
+			<add><![CDATA[, 'gCalSettings' => 'ModifyGCAL']]></add>
 		</operation>
 
 		<operation>
-			<search position="before" whitespace="loose">
-				<![CDATA['tabs' => array(]]>
+			<search position="before"><![CDATA['tabs' => array(]]>
 			</search>
-			<add>
-				<![CDATA['gCalSettings' => array(
+			<add><![CDATA['gCalSettings' => array(
 					'title' => "gCalSync Settings",
 					'description' => "Modify gCalSync Settings",
 					'href' => $scripturl . '?action=managecalendar;sa=gCalSettings',
-					),]]>
-			</add>
+					),]]></add>
 		</operation>
 
 		<operation>
 			<search position="end" />
-			<add>
-				<![CDATA[//Function that handles gCalSync Settings
+			<add><![CDATA[//Function that handles gCalSync Settings
 				function ModifyGCAL()
 				{
 					// What global variables do we need here?
@@ -85,16 +77,14 @@
 						// Time to exit!
 						redirectexit( 'action=managecalendar;sa=gCalSettings');
 					}
-				}]]>
-			</add>
+				}]]></add>
 		</operation>
 	</file>
 
 	<file name="$themedir/ManageCalendar.template.php">
 		<operation>
 			<search position="end" />
-			<add>
-				<![CDATA[//gCalSync Settings Template
+			<add><![CDATA[//gCalSync Settings Template
 				function template_modify_gCal()
 				{
 					global $context, $scripturl, $sc, $modSettings, $txt;
@@ -121,8 +111,7 @@
 						</table>
 						<input type="hidden" name="sc" value="', $context['session_id'], '" />
 						</form>';
-				}]]>
-			</add>
+				}]]></add>
 		</operation>
 	</file>
 	
@@ -133,22 +122,15 @@
 	<!-- For event Insertion -->
 	<file name="$sourcedir/Calendar.php">
 		<operation>
-			<search position="after" whitespace="loose">
-				<![CDATA[// Add special chars to the title.]]>
-			</search>
-			<add>
-				<![CDATA[global $sourcedir, $boardurl; 
+			<search position="after"><![CDATA[// Add special chars to the title.]]></search>
+			<add><![CDATA[global $sourcedir, $boardurl; 
 				/* gCalSync: Bringing it in... */
-				require_once( $sourcedir . '/gCalSync.php' );]]>
-			</add>
+				require_once( $sourcedir . '/gCalSync.php' );]]></add>
 		</operation>
 		
 		<operation>
-			<search position="after" whitespace="loose">
-				<![CDATA[// Insert the event!]]>
-			</search>
-			<add>
-				<![CDATA[
+			<search position="after"><![CDATA[// Insert the event!]]></search>
+			<add><![CDATA[
 				    /* Grab a couple of useful values from $modSettings */
 				    if( !empty($modSettings['gCal_user']) &&
 							!empty($modSettings['gCal_pass'] ) )
@@ -159,14 +141,12 @@
     				else
 	    			{
 					die( 'gCalSync: gUser and/or gPass are not in the settings table within the database!' );
-					}]]>
-			</add>
+					}]]></add>
 		</operation>
 
 		<operation>
-<search position="before" whitespace="loose"><![CDATA[        VALUES ($id_board, $id_topic, SUBSTRING('$title', 1, 48), $id_member, '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year)) . "', '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400) . "')", __FILE__, __LINE__);]]></search>
-			<add>
-				<![CDATA[
+<search position="before"><![CDATA[        VALUES ($id_board, $id_topic, SUBSTRING('$title', 1, 48), $id_member, '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year)) . "', '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400) . "')", __FILE__, __LINE__);]]></search>
+			<add><![CDATA[
 					/* Initializing the gCalSync for Google Calendar
 					 * Synchronization
 					 */
@@ -174,13 +154,12 @@
 
 					/* Inserting the event into Google Calendar */
 					gCalSync_Insert( $db_prefix, $boardurl, $gCalObj, $title, $month, $day, $year, $span );
-				]]>
-			</add>
+				]]></add>
 		</operation>
 
 		<!-- For event editting and deletion -->
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[    global $modSettings, $topic, $ID_MEMBER, $func;]]></search>
+			<search position="before"><![CDATA[    global $modSettings, $topic, $ID_MEMBER, $func;]]></search>
 			<add><![CDATA[global $boardurl;
 				/* gCalSync: Bringing it in... */
 				require_once( $sourcedir . '/gCalSync.php' );
@@ -199,7 +178,7 @@
 
 		<!-- For event deletion -->
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[        elseif (isset($_REQUEST['deleteevent']))]]></search>
+			<search position="before"><![CDATA[        elseif (isset($_REQUEST['deleteevent']))]]></search>
 			<add><![CDATA[
 		{
 		/* Initializing the gCalSync for Google Calendar Synchronization */
@@ -211,7 +190,7 @@
         </operation>
 
 		<operation>
-			<search position="after" whitespace="loose"><![CDATA[        // ... or just update it?]]></search>
+			<search position="after"><![CDATA[        // ... or just update it?]]></search>
 			<add><![CDATA[
 			}
 			]]></add>
@@ -219,7 +198,7 @@
 
 		<!-- For event update -->
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
+			<search position="before"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
 			<add><![CDATA[
 		/* Initializing the gCalSync for Google Calendar Synchronization */
         $gCalObj = gCalSync_Init( $gUser, $gPass );
@@ -235,7 +214,7 @@
 	<file name="$sourcedir/Post.php">
 		<!-- For event editting and deletion -->
 		<operation>
-			<search position="after" whitespace="loose"><![CDATA[    // Previewing? Go back to start.]]></search>
+			<search position="after"><![CDATA[    // Previewing? Go back to start.]]></search>
 			<add><![CDATA[	global $boardurl;
 				/* gCalSync: Bringing it in... */
 				require_once( $sourcedir . '/gCalSync.php' );
@@ -255,7 +234,7 @@
 		
 		<!-- For event deletion -->
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[        if (isset($_REQUEST['deleteevent']))]]></search>
+			<search position="before"><![CDATA[        if (isset($_REQUEST['deleteevent']))]]></search>
 			<add><![CDATA[
 		{
 		/* Initializing the gCalSync for Google Calendar Synchronization */
@@ -267,7 +246,7 @@
         </operation>
 
 		<operation>
-			<search position="after" whitespace="loose"><![CDATA[        // ... or just update it?]]></search>
+			<search position="after"><![CDATA[        // ... or just update it?]]></search>
 			<add><![CDATA[
 			}
 			]]></add>
@@ -275,7 +254,7 @@
 	
 		<!-- For event update -->
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
+			<search position="before"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
 			<add><![CDATA[
 		/* Initializing the gCalSync for Google Calendar Synchronization */
         $gCalObj = gCalSync_Init( $gUser, $gPass );
@@ -291,7 +270,7 @@
 
 	<file name="$sourcedir/RemoveTopic.php">
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[    global $db_prefix, $sourcedir, $modSettings;]]></search>
+			<search position="before"><![CDATA[    global $db_prefix, $sourcedir, $modSettings;]]></search>
 			<add><![CDATA[
 	global $boardurl;
 	/* gCalSync: Bringing it in... */
@@ -311,7 +290,7 @@
 		</operation>
 	
 		<operation>
-			<search position="before" whitespace="loose"><![CDATA[    // Delete anything related to the topic.]]></search>
+			<search position="before"><![CDATA[    // Delete anything related to the topic.]]></search>
 			<add><![CDATA[
 	$result = db_query( "SELECT ID_EVENT FROM {$db_prefix}calendar
         WHERE ID_TOPIC $condition", __FILE__, __LINE__ );
@@ -339,7 +318,7 @@
  * this later
  */
 		<operation>
-			<search position="after" whitespace="loose"><![CDATA[            // Move the topics to the recycle board.]]></search>
+			<search position="after"><![CDATA[            // Move the topics to the recycle board.]]></search>
 			<add><![CDATA[
 			/* Looping through $recycleTopics and removing their associated
 			 * events from gCal */
