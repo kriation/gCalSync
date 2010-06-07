@@ -122,14 +122,14 @@
 	<!-- For event Insertion -->
 	<file name="$sourcedir/Calendar.php">
 		<operation>
-			<search position="after"><![CDATA[// Add special chars to the title.]]></search>
+			<search position="after"><![CDATA[	// Add special chars to the title.]]></search>
 			<add><![CDATA[global $sourcedir, $boardurl; 
 				/* gCalSync: Bringing it in... */
 				require_once( $sourcedir . '/gCalSync.php' );]]></add>
 		</operation>
 		
 		<operation>
-			<search position="after"><![CDATA[// Insert the event!]]></search>
+			<search position="after"><![CDATA[	// Insert the event!]]></search>
 			<add><![CDATA[
 				    /* Grab a couple of useful values from $modSettings */
 				    if( !empty($modSettings['gCal_user']) &&
@@ -145,7 +145,7 @@
 		</operation>
 
 		<operation>
-<search position="before"><![CDATA[        VALUES ($id_board, $id_topic, SUBSTRING('$title', 1, 48), $id_member, '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year)) . "', '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400) . "')", __FILE__, __LINE__);]]></search>
+<search position="before"><![CDATA[		VALUES ($id_board, $id_topic, SUBSTRING('$title', 1, 48), $id_member, '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year)) . "', '" . strftime('%Y-%m-%d', mktime(0, 0, 0, $month, $day, $year) + $span * 86400) . "')", __FILE__, __LINE__);]]></search>
 			<add><![CDATA[
 					/* Initializing the gCalSync for Google Calendar
 					 * Synchronization
@@ -159,7 +159,7 @@
 
 		<!-- For event editting and deletion -->
 		<operation>
-			<search position="before"><![CDATA[    global $modSettings, $topic, $ID_MEMBER, $func;]]></search>
+			<search position="before"><![CDATA[	global $modSettings, $topic, $ID_MEMBER, $func;]]></search>
 			<add><![CDATA[global $boardurl;
 				/* gCalSync: Bringing it in... */
 				require_once( $sourcedir . '/gCalSync.php' );
@@ -178,7 +178,7 @@
 
 		<!-- For event deletion -->
 		<operation>
-			<search position="before"><![CDATA[        elseif (isset($_REQUEST['deleteevent']))]]></search>
+			<search position="before"><![CDATA[		elseif (isset($_REQUEST['deleteevent']))]]></search>
 			<add><![CDATA[
 		{
 		/* Initializing the gCalSync for Google Calendar Synchronization */
@@ -190,7 +190,7 @@
         </operation>
 
 		<operation>
-			<search position="after"><![CDATA[        // ... or just update it?]]></search>
+			<search position="after"><![CDATA[		// ... or just update it?]]></search>
 			<add><![CDATA[
 			}
 			]]></add>
@@ -198,7 +198,7 @@
 
 		<!-- For event update -->
 		<operation>
-			<search position="before"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
+			<search position="before"><![CDATA[			$start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
 			<add><![CDATA[
 		/* Initializing the gCalSync for Google Calendar Synchronization */
         $gCalObj = gCalSync_Init( $gUser, $gPass );
@@ -214,7 +214,7 @@
 	<file name="$sourcedir/Post.php">
 		<!-- For event editting and deletion -->
 		<operation>
-			<search position="after"><![CDATA[    // Previewing? Go back to start.]]></search>
+			<search position="after"><![CDATA[	// Previewing? Go back to start.]]></search>
 			<add><![CDATA[	global $boardurl;
 				/* gCalSync: Bringing it in... */
 				require_once( $sourcedir . '/gCalSync.php' );
@@ -234,7 +234,7 @@
 		
 		<!-- For event deletion -->
 		<operation>
-			<search position="before"><![CDATA[        if (isset($_REQUEST['deleteevent']))]]></search>
+			<search position="before"><![CDATA[		if (isset($_REQUEST['deleteevent']))]]></search>
 			<add><![CDATA[
 		{
 		/* Initializing the gCalSync for Google Calendar Synchronization */
@@ -246,7 +246,7 @@
         </operation>
 
 		<operation>
-			<search position="after"><![CDATA[        // ... or just update it?]]></search>
+			<search position="after"><![CDATA[		// ... or just update it?]]></search>
 			<add><![CDATA[
 			}
 			]]></add>
@@ -254,7 +254,7 @@
 	
 		<!-- For event update -->
 		<operation>
-			<search position="before"><![CDATA[            $start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
+			<search position="before"><![CDATA[			$start_time = mktime(0, 0, 0, (int) $_REQUEST['month'], (int) $_REQUEST['day'], (int) $_REQUEST['year']);]]></search>
 			<add><![CDATA[
 		/* Initializing the gCalSync for Google Calendar Synchronization */
         $gCalObj = gCalSync_Init( $gUser, $gPass );
@@ -270,7 +270,7 @@
 
 	<file name="$sourcedir/RemoveTopic.php">
 		<operation>
-			<search position="before"><![CDATA[    global $db_prefix, $sourcedir, $modSettings;]]></search>
+			<search position="before"><![CDATA[	global $db_prefix, $sourcedir, $modSettings;]]></search>
 			<add><![CDATA[
 	global $boardurl;
 	/* gCalSync: Bringing it in... */
@@ -290,7 +290,7 @@
 		</operation>
 	
 		<operation>
-			<search position="before"><![CDATA[    // Delete anything related to the topic.]]></search>
+			<search position="before"><![CDATA[	// Delete anything related to the topic.]]></search>
 			<add><![CDATA[
 	$result = db_query( "SELECT ID_EVENT FROM {$db_prefix}calendar
         WHERE ID_TOPIC $condition", __FILE__, __LINE__ );
