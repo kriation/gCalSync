@@ -61,6 +61,7 @@ elseif( !defined( 'SMF' ) )
  * within $themedir:
  *	ManageCalendar.template.php
 */
+$themedir = $settings['default_theme_dir'];
 
 // Do backups exist for the above?
 $fileList = array( "$sourcedir/ManageCalendar.php", 
