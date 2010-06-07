@@ -41,6 +41,7 @@
 
 	<upgrade from="1.0.1" for="1.1.11">
 		<readme type="file">upgrade.me</readme>
+		<code type="file">finesse-1.0.1.php</code>
 		<modification>gCalSync.xml</modification>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
