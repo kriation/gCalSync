@@ -228,25 +228,40 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 		WHERE ID_EVENT=$eventID",
 	       	__FILE__, __LINE__ );
 
-	/* Again... assuming that there's only one row returned */
-	while( $row = mysql_fetch_assoc( $result ) )
+	$numRows = mysql_num_rows( $result );
+	if( $numRows == 1 )
 	{
+		$row = mysql_fetch_assoc( $result );
 		$gCalID = $row['gCal_ID'];
+		
+		/* Connect to Google and retrieve the event's edit URL */
+		$gEvent = $gCal->getCalendarEventEntry( $gCalID );
+
+		/* If we're successful... pull the trigger... */
+		/* TODO: Catch an exception here... */
+		$gEvent->delete();
+	
+		db_query( 
+			"DELETE FROM {$db_prefix}gCal 
+			WHERE ID_EVENT=$eventID", 
+			__FILE__, __LINE__ );
+	}
+	elseif( $numRows == 0 )
+	{
+	    /* Don't do anything... 
+	     * TODO: Find something to do... :)
+	     */
+	}
+	elseif( $numRows > 1 )
+	{
+	    die( 'gCalSync: Result returned more than one row!?!' );
+	}
+	elseif( $numRows == FALSE )
+	{
+	    die( 'gCalSync: Query failed during gCalSync_Remove!!' );
 	}
 	mysql_free_result( $result );
 
-	/* Connect to Google and retrieve the event's edit URL */
-	$gEvent = $gCal->getCalendarEventEntry( $gCalID );
-
-	/* If we're successful... pull the trigger... */
-	/* TODO: Catch an exception here... */
-	$gEvent->delete();
-
-	/* This is bad without the above exception handling */
-	db_query( 
-		"DELETE FROM {$db_prefix}gCal 
-		WHERE ID_EVENT=$eventID", 
-		__FILE__, __LINE__ );
 
 	/* That was easy... :) */
 }
@@ -278,34 +293,52 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 		WHERE ID_EVENT=$eventID", 
 		__FILE__, __LINE__ );
 
-	/* Again... assuming that there's only one row returned */
-	while( $row = mysql_fetch_assoc( $result ) )
+	$numRows = mysql_num_rows( $result );
+	if( $numRows == 1 )
 	{
 		$gCalID = $row['gCal_ID'];
+		/* Connect to Google and retrieve the event's edit URL */
+		$event = $gCal->getCalendarEventEntry( $gCalID );
+
+		// If $span == 0, event lasts 1 day, if it's >0, add 1
+		if( $span > 0 )
+			$span++;
+	
+		/* Build the update object */
+		$event->title = $gCal->newTitle( $title );
+		$when = $gCal->newWhen();
+		$startDate = strftime( 
+			'%Y-%m-%d', 
+			mktime(0, 0, 0, $month, $day, $year) );
+		$endDate = strftime( 
+			'%Y-%m-%d', 
+			mktime(0, 0, 0, $month, $day, $year) 
+				+ $span * 86400 );
+		$when->startTime = $startDate;
+		$when->endTime = $endDate;
+		$event->when = array( $when );
+	
+		/* If the above was put together properly, 
+		 * this should work... 
+		 */
+		$event->save();
 	}
+	elseif( $numRows == 0 )
+	{
+	    /* Don't do anything... 
+	     * TODO: Find something to do... :)
+	     */
+	}
+	elseif( $numRows > 1 )
+	{
+	    die( 'gCalSync: Result returned more than one row!?!' );
+	}
+	elseif( $numRows == FALSE )
+	{
+	    die( 'gCalSync: Query failed during gCalSync_Update!!' );
+	}
+	
 	mysql_free_result( $result );
 
-	/* Connect to Google and retrieve the event's edit URL */
-	$event = $gCal->getCalendarEventEntry( $gCalID );
-
-	// If $span == 0, event lasts 1 day, if it's >0, add 1
-	if( $span > 0 )
-		$span++;
-	
-	/* Build the update object */
-	$event->title = $gCal->newTitle( $title );
-	$when = $gCal->newWhen();
-	$startDate = strftime( 
-		'%Y-%m-%d', 
-		mktime(0, 0, 0, $month, $day, $year) );
-	$endDate = strftime( 
-		'%Y-%m-%d', 
-		mktime(0, 0, 0, $month, $day, $year) + $span * 86400 );
-	$when->startTime = $startDate;
-	$when->endTime = $endDate;
-	$event->when = array( $when );
-	
-	/* If the above was put together properly, this should work... */
-	$event->save();
 }
 ?>
