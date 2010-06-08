@@ -45,6 +45,11 @@
 		<modification>gCalSync.xml</modification>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
+
+	<upgrade from="1.0.2" for="1.1.11">
+		<readme type="file">upgrade.me</readme>
+		<require-file name="gCalSync.php" destination="$sourcedir" />
+	</upgrade>
 	
 	<uninstall for="1.1.11">
 		<code type="file">gCalSync-uninstall.php</code>
