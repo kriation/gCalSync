@@ -30,7 +30,7 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	
 	<install for="1.1.11">
 		<readme type="file">read.me</readme>
@@ -46,7 +46,7 @@
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
 
-	<upgrade from="1.0.2" for="1.1.11">
+	<upgrade from="1.0.3" for="1.1.11">
 		<readme type="file">upgrade.me</readme>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
