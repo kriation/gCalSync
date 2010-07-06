@@ -39,6 +39,9 @@ if( !defined( 'SMF' ) )
 function gCalSync_Init( $user, $pass )
 {
 	/* Without Zend, this does not work */
+    	$zendLoc = getcwd() . '/Sources';
+	set_include_path( get_include_path() . PATH_SEPARATOR . $zendLoc );
+
 	require_once 'Zend/Loader.php';
 	Zend_Loader::loadClass('Zend_Gdata');
 	Zend_Loader::loadClass('Zend_Gdata_AuthSub');
