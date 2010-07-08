@@ -55,16 +55,14 @@ function gCalSync_Init( $user, $pass )
 			Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
 	if( !$gClient )
 	{
-		die('gCalSync: 
-		Could not connect to the Google Calendar service!' );
+		fatal_lang_error('gCalE1');
 	}
 
 	/* Attempt to grab a Google Calendar object */
 	$gCal = new Zend_Gdata_Calendar( $gClient );
 	if( !$gCal )
 	{
-		die( 'gCalSync: 
-		Could not establish a Google Calendar object!' );
+		fatal_lang_error('gCalE2');
 	}
 
 	/* Return the Google Calendar object for further usage */
@@ -90,8 +88,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 {
 	if( !$gCal )
 	{
-		die( 'gCalSync: 
-		Insert - Could not use Google Calendar object!' );
+		fatal_lang_error('gCalE3');
 	}
 
 	/* Assuming that the Google Calendar object we were passed is still
@@ -221,8 +218,7 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 {
 	if( !$gCal )
 	{
-		die( 'gCalSync: 
-		Remove - Could not use Google Calendar object!' );
+		fatal_lang_error('gCalE4');
 	}
 	
 	/* Retrieve the Google event URL from the smf DB */
@@ -257,11 +253,11 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	}
 	elseif( $numRows > 1 )
 	{
-	    die( 'gCalSync: Result returned more than one row!?!' );
+	    fatal_lang_error('gCalE5');
 	}
 	elseif( $numRows == FALSE )
 	{
-	    die( 'gCalSync: Query failed during gCalSync_Remove!!' );
+	    fatal_lang_error('gCalE6');
 	}
 	mysql_free_result( $result );
 
@@ -286,8 +282,7 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 {
 	if( !$gCal )
 	{
-		die( 'gCalSync: 
-		Update - Could not use Google Calendar object!' );
+	    	fatal_lang_error('gCal7');
 	}
 	
 	/* Retrieve the Google event URL from the smf DB */
@@ -334,11 +329,11 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 	}
 	elseif( $numRows > 1 )
 	{
-	    die( 'gCalSync: Result returned more than one row!?!' );
+	    fatal_lang_error('gCalE5');
 	}
 	elseif( $numRows == FALSE )
 	{
-	    die( 'gCalSync: Query failed during gCalSync_Update!!' );
+	    fatal_lang_error('gCalE6');
 	}
 	
 	mysql_free_result( $result );
