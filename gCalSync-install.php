@@ -56,8 +56,8 @@
 
 // Adding the additional parameters to smf_settings
 $new_settings = array( 
-		'gCal_user' => 'Google User',
-		'gCal_pass' => 'Google Password' );
+		'gCal_user' => '',
+		'gCal_pass' => '' );
 
 // Checking where this is being called from
 if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
