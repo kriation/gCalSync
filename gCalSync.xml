@@ -242,7 +242,7 @@ function template_modify_gCal()
 			
 			/* Update the event in Google Calendar */
 			gCalSync_Update( $db_prefix, $gCalObj, (int) $_REQUEST['eventid'],
-						(int) $_REQUEST['evtitle'], (int) $_REQUEST['month'],
+						(string) $_REQUEST['evtitle'], (int) $_REQUEST['month'],
 						(int) $_REQUEST['day'], (int) $_REQUEST['year'], $span );
 ]]></add>
 		</operation>
@@ -301,7 +301,7 @@ function template_modify_gCal()
 
 			/* Update the event in Google Calendar */
 			gCalSync_Update( $db_prefix, $gCalObj, (int) $_REQUEST['eventid'],
-						(int) $_REQUEST['evtitle'], (int) $_REQUEST['month'],
+						(string) $_REQUEST['evtitle'], (int) $_REQUEST['month'],
 						(int) $_REQUEST['day'], (int) $_REQUEST['year'], $span );
 ]]></add>
 		</operation>
