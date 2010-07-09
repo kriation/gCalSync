@@ -230,20 +230,23 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	$numRows = mysql_num_rows( $result );
 	if( $numRows == 1 )
 	{
-		$row = mysql_fetch_assoc( $result );
-		$gCalID = $row['gCal_ID'];
-		
-		/* Connect to Google and retrieve the event's edit URL */
-		$gEvent = $gCal->getCalendarEventEntry( $gCalID );
+		while( $row = mysql_fetch_assoc( $result ) )
+		{
 
-		/* If we're successful... pull the trigger... */
-		/* TODO: Catch an exception here... */
-		$gEvent->delete();
+			$gCalID = $row['gCal_ID'];
+			
+			/* Connect to Google and retrieve the event's edit URL */
+			$gEvent = $gCal->getCalendarEventEntry( $gCalID );
 	
-		db_query( 
-			"DELETE FROM {$db_prefix}gCal 
-			WHERE ID_EVENT=$eventID", 
-			__FILE__, __LINE__ );
+			/* If we're successful... pull the trigger... */
+			/* TODO: Catch an exception here... */
+			$gEvent->delete();
+		
+			db_query( 
+				"DELETE FROM {$db_prefix}gCal 
+				WHERE ID_EVENT=$eventID", 
+				__FILE__, __LINE__ );
+		}
 	}
 	elseif( $numRows == 0 )
 	{
@@ -294,32 +297,35 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 	$numRows = mysql_num_rows( $result );
 	if( $numRows == 1 )
 	{
-		$gCalID = $row['gCal_ID'];
-		/* Connect to Google and retrieve the event's edit URL */
-		$event = $gCal->getCalendarEventEntry( $gCalID );
-
-		// If $span == 0, event lasts 1 day, if it's >0, add 1
-		if( $span > 0 )
-			$span++;
+		while( $row = mysql_fetch_assoc( $result ) )
+		{
+			$gCalID = $row['gCal_ID'];
+			/* Connect to Google and retrieve the event's edit URL */
+			$event = $gCal->getCalendarEventEntry( $gCalID );
 	
-		/* Build the update object */
-		$event->title = $gCal->newTitle( $title );
-		$when = $gCal->newWhen();
-		$startDate = strftime( 
-			'%Y-%m-%d', 
-			mktime(0, 0, 0, $month, $day, $year) );
-		$endDate = strftime( 
-			'%Y-%m-%d', 
-			mktime(0, 0, 0, $month, $day, $year) 
-				+ $span * 86400 );
-		$when->startTime = $startDate;
-		$when->endTime = $endDate;
-		$event->when = array( $when );
-	
-		/* If the above was put together properly, 
-		 * this should work... 
-		 */
-		$event->save();
+			// If $span == 0, event lasts 1 day, if it's >0, add 1
+			if( $span > 0 )
+				$span++;
+		
+			/* Build the update object */
+			$event->title = $gCal->newTitle( $title );
+			$when = $gCal->newWhen();
+			$startDate = strftime( 
+				'%Y-%m-%d', 
+				mktime(0, 0, 0, $month, $day, $year) );
+			$endDate = strftime( 
+				'%Y-%m-%d', 
+				mktime(0, 0, 0, $month, $day, $year) 
+					+ $span * 86400 );
+			$when->startTime = $startDate;
+			$when->endTime = $endDate;
+			$event->when = array( $when );
+		
+			/* If the above was put together properly, 
+			 * this should work... 
+			 */
+			$event->save();
+		}
 	}
 	elseif( $numRows == 0 )
 	{
