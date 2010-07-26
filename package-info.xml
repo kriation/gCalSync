@@ -30,7 +30,7 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>1.0.6</version>
+	<version>1.0.7</version>
 	
 	<install for="1.1.11">
 		<readme type="file">read.me</readme>
@@ -47,5 +47,9 @@
 		<remove-dir name="$sourcedir/Zend" />
 	</uninstall>
 
+	<!-- Upgrade list -->
+	<upgrade from="1.0.6">
+		<modification>upgrade-106.xml</modification>
+	</upgrade>
 
 </package-info>
