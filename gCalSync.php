@@ -97,7 +97,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 
 	/* Changing the SMF title to be in a non-HTML 
 	 * Special Character form */
-	$cleanTitle = un_htmlspecialchars( $title );
+	$cleanTitle = str_replace( "\\", "", un_htmlspecialchars( $title ));
  
 	/* Building out the topic link for the Google Calendar entry
 	 * This step is painful, and is a multi-step process until I can
@@ -307,6 +307,10 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 			if( $span > 0 )
 				$span++;
 		
+			/* Fix title */
+                        $cleanTitle = str_replace( "\\", "",
+                                un_htmlspecialchars( $title ));
+	
 			/* Build the update object */
 			$event->title = $gCal->newTitle( $title );
 			$when = $gCal->newWhen();
