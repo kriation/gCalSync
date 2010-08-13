@@ -30,7 +30,7 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>1.0.7</version>
+	<version>1.0.8</version>
 	
 	<install for="1.1.11">
 		<readme type="file">read.me</readme>
@@ -50,6 +50,10 @@
 	<!-- Upgrade list -->
 	<upgrade from="1.0.6">
 		<modification>upgrade-106.xml</modification>
+	</upgrade>
+
+	<upgrade from="1.0.7">
+		<modification>upgrade-107.xml</modification>
 	</upgrade>
 
 </package-info>
