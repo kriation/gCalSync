@@ -312,7 +312,7 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
                                 un_htmlspecialchars( $title ));
 	
 			/* Build the update object */
-			$event->title = $gCal->newTitle( $title );
+			$event->title = $gCal->newTitle( $cleanTitle );
 			$when = $gCal->newWhen();
 			$startDate = strftime( 
 				'%Y-%m-%d', 
