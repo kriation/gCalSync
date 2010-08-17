@@ -50,6 +50,7 @@
 	<!-- Upgrade list -->
 	<upgrade from="1.0.6">
 		<modification>upgrade-106.xml</modification>
+		<modification>upgrade-107.xml</modification>
 	</upgrade>
 
 	<upgrade from="1.0.7">
