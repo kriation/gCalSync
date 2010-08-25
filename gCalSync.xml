@@ -28,12 +28,37 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 	
 	<id>kriation:gCalSync</id>
-	<version>1.0.8</version>
+	<version>1.0.9</version>
 
 	<!-- ************************************* -->
 	<!-- gCalSync English Language Additions   -->
 	<!-- ************************************* -->
 	<file name="$languagedir/Modifications.english.php">
+		<operation>
+			<search position="end" />
+			<add><![CDATA[
+// gCalSync Error Messages
+$txt['gCalE1'] = 'Could not connect to the Google Calendar service!';
+$txt['gCalE2'] = 'Could not establish a Google Calendar object!';
+$txt['gCalE3'] = 'Could not use Google Calendar object for insert!';
+$txt['gCalE4'] = 'Could not use Google Calendar object for insert!';
+$txt['gCalE5'] = 'Result returned more than one row?!?!';
+$txt['gCalE6'] = 'Query failed during remove!';
+$txt['gCalE7'] = 'gUser and/or gPass have not been set!';
+
+// gCalSync Static Fields
+$txt['gCalS1'] = 'gCalSync Settings';
+$txt['gCalS2'] = 'Modify gCalSync Settings';
+$txt['gCalS3'] = 'Google Calendar Username';
+$txt['gCalS4'] = 'Google Calendar Password';
+]]></add>
+		</operation>
+	</file>
+	
+	<!-- ************************************* -->
+	<!-- gCalSync UTF8 Language Additions	   -->
+	<!-- ************************************* -->
+	<file name="$languagedir/Modifications..english-utf8.php" error="ignore">
 		<operation>
 			<search position="end" />
 			<add><![CDATA[
@@ -354,36 +379,6 @@ function template_modify_gCal()
 	}
 ]]></add>
 		</operation>
-
-<!-- 
-/* Let's not remove the gCalID from the DB or Google when a topic is
- * 'recycled'. I'm leaving this here because I might want to re-visit 
- * this later
- */
-		<operation>
-			<search position="after"><![CDATA[            // Move the topics to the recycle board.]]></search>
-			<add><![CDATA[
-			/* Looping through $recycleTopics and removing their associated
-			 * events from gCal */
-			foreach( $recycleTopics as $deadTopic )
-			{
-				$result = db_query( "SELECT ID_EVENT FROM {$db_prefix}calendar WHERE ID_TOPIC = $deadTopic", __FILE__, __LINE__ );
-				while( $row = mysql_fetch_assoc( $result ) )
-				{
-					$deadEventID = $row[ 'ID_EVENT' ];
-				}
-				mysql_free_result( $result );
-
-				/* Delete entry from Google Calendar if it exists */
-				if( !empty( $deadEventID ) )
-				{
-					$gCalObj = gCalSync_Init( $gUser, $gPass );
-					gCalSync_Remove( $db_prefix, $gCalObj, $deadEventID );
-				}
-			}
-			]]></add>
-		</operation>
--->
 	</file>
 
 
