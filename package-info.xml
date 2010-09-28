@@ -55,7 +55,7 @@
 		<modification>upgrade-108.xml</modification>
 		<modification>upgrade-109.xml</modification>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</modification>
+		<code>upgrade-109.php</code>
 	</upgrade>
 
 	<upgrade from="1.0.7">
@@ -64,7 +64,7 @@
 		<modification>upgrade-108.xml</modification>
 		<modification>upgrade-109.xml</modification>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</modification>
+		<code>upgrade-109.php</code>
 	</upgrade>
 
 	<upgrade from="1.0.8">
@@ -72,7 +72,7 @@
 		<modification>upgrade-108.xml</modification>
 		<modification>upgrade-109.xml</modification>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</modification>
+		<code>upgrade-109.php</code>
 	</upgrade>
 
 	<upgrade from="1.0.9">
