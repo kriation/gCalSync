@@ -63,6 +63,30 @@ if( $result === false )
 		Delete from settings failed! ');
 }
 
+$result = db_query( 
+	"DELETE FROM {$db_prefix}settings 
+	WHERE variable='gCal_list'", 
+	__FILE__, __LINE__ );
+
+// It broke - Shit.
+if( $result === false )
+{
+	die( '<b>Really Not Good:</b>
+		Delete from settings failed! ');
+}
+
+$result = db_query( 
+	"DELETE FROM {$db_prefix}settings 
+	WHERE variable='gCal_calID'",
+	__FILE__, __LINE__ );
+
+// It broke - Shit.
+if( $result === false )
+{
+	die( '<b>Really Not Good:</b>
+		Delete from settings failed! ');
+}
+
 $result = db_query( "DROP TABLE {$db_prefix}gCal", __FILE__, __LINE__ );
 // It broke - Shit.
 if( $result === false )

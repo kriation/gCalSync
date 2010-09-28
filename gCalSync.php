@@ -148,6 +148,18 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	 * instead of twice.
 	*/
 
+        /* Grab the Google Calendar URI */
+        $result = db_query(
+                "SELECT value from {$db_prefix}settings
+                WHERE variable='gCal_calID'",
+                __FILE__, __LINE__ );
+        while( $row = mysql_fetch_assoc( $result ) ) 
+        {
+            $gCal_calID = $row['value'];
+        }
+        mysql_free_result( $result );
+	
+
 	/* /me sighs - Let's build the start and end dates... again.
 	 * This is directly 'borrowed' from the SMF code within Calendar.php
 	 * from line 457.
@@ -183,7 +195,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	$event->when = array( $when );
 
 	/* 3,2,1 - Insert */
-	$event = $gCal->insertEvent( $event );
+	$event = $gCal->insertEvent( $event, $gCal_calID );
 	
 	/* As long as the above worked properly, we can move forward
 	 * and add the associated Google event ID to the mapping table

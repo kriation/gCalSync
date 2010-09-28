@@ -34,8 +34,9 @@
  * Table: smf_settings
  * gUser == This is the user account that will be used to connect to Google.
  * gPass == This is the above user account's password.
- * Yes I know... it's in the clear. I'll do something fun with it 
- * eventually.
+ * gCal_list == An array to hold onto the list of calendars available to 
+ *		gCalSync
+ * gCal_calID == Calendar ID to sync to
  *
  * Addition
  * --------
@@ -57,7 +58,10 @@
 // Adding the additional parameters to smf_settings
 $new_settings = array( 
 		'gCal_user' => '',
-		'gCal_pass' => '' );
+		'gCal_pass' => '', 
+		'gCal_list' => '',
+		'gCal_calID' => ''
+		);
 
 // Checking where this is being called from
 if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
