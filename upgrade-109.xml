@@ -1,0 +1,237 @@
+<?xml version="1.0"?>
+<!--
+/************************************************************************
+* upgrade-109.xml							*
+*************************************************************************
+* gCalSync 								*
+* Copyright 2009-2010 Armen Kaleshian <armen@kriation.com>		*
+* License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
+*									*
+* An enhancement for SMF to synchronize forum calendar entries with a	*
+* Google Calendar.							*
+* ********************************************************************* *
+* This program is free software: you can redistribute it and/or modify	*
+* it under the terms of the GNU General Public License as published by	*
+* the Free Software Foundation, either version 3 of the License, or	*
+* (at your option) any later version.					*
+*									*
+* This program is distributed in the hope that it will be useful,	*
+* but WITHOUT ANY WARRANTY; without even the implied warranty of	*
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		*
+* GNU General Public License for more details.				*
+*									*
+* You should have received a copy of the GNU General Public License	*
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
+************************************************************************/
+-->
+<!DOCTYPE modification SYSTEM "http://www.simplemachines.org/xml/modification">
+<modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
+	
+	<id>kriation:gCalSync</id>
+	<version>1.0.10</version>
+<!--	
+	<file name="$sourcedir/gCalSync.php">
+		<operation>
+			<search position="after"><![CDATA[	/* /me sighs - Let's build the start and end dates... again.]]></search>
+			<add><![CDATA[
+        /* Grab the Google Calendar URI */
+        $result = db_query(
+                "SELECT value from {$db_prefix}settings
+                WHERE variable='gCal_calID'",
+                __FILE__, __LINE__ );
+        while( $row = mysql_fetch_assoc( $result ) ) 
+        {   
+            $gCal_calID = $row['value'];
+        }   
+        mysql_free_result( $result );
+    
+
+]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	$event = $gCal->insertEvent( $event );]]>
+			<add><![CDATA[	$event = $gCal->insertEvent( $event, $gCal_calID );]]></add>
+		</operation>
+	</file>
+-->
+	<file name="$languagedir/Modifications.english.php">
+		<operation>
+			<search position="end" />
+			<add><![CDATA[$txt['gCalS5'] = 'Pick a Calendar...';
+			]]></add>
+		</operation>
+	</file>
+
+	<file name="$languagedir/Modifications.english-utf8.php" error="skip">
+		<operation>
+			<search position="end" />
+			<add><![CDATA[$txt['gCalS5'] = 'Pick a Calendar...';
+			]]></add>
+		</operation>
+	</file>
+
+	<file name="$sourcedir/ManageCalendar.php">
+		<operation>
+			<search position="before"><![CDATA[	global $context, $sourcedir, $txt;
+]]></search>
+			<add><![CDATA[
+	// Bringing in gCalSync for the init
+	require_once( $sourcedir . '/gCalSync.php' );
+]]></add>
+		</operation>
+
+		<operation>
+			<search position="before"><![CDATA[	// Form has been submitted! Let's process! :-D]]></search>
+			<add><![CDATA[
+	if( isset( $_POST[ 'gCal_cals' ] ))
+	{
+		checkSession();
+
+		updateSettings( 
+			array( 'gCal_calID' => $_POST['gCalSync-calendar'] ));
+		updateStats( 'calendar' );
+
+		redirectexit( 'action=managecalendar;sa=gCalSettings' );
+	}]]></add>
+		</operation>
+
+		<operation>
+			<search position="replace"><![CDATA[	if( isset( $_POST['sc'] ))]]></search>
+			<add><![CDATA[	if( isset( $_POST['gCal_creds'] ))]]></add>
+		</operation>
+
+		<operation>
+			<search position="replace"><![CDATA[		// Time to exit!
+		redirectexit( 'action=managecalendar;sa=gCalSettings');
+	}
+}
+
+]]></search>
+			<add><![CDATA[		// As long as these credentials are correct,
+		// let's try to get the calendar list
+		// and present it to the administrator through the context
+		$gCalAdmin = gCalSync_Init( $_POST['gCal_user'],
+					$_POST['gCal_pass'] );
+		$context['gCalSync_calendars'] = array();
+		$gCalNames = array();
+		$gCalIDs = array();
+
+		$feed = $gCalAdmin->getCalendarListFeed();
+
+		foreach( $feed as $calendar )
+		{
+			$gCalNames[] = $calendar->title->text;
+			$gCalIDs[] = $calendar->content->src;
+		}
+
+		$gCal_list = serialize( 
+			array_combine( $gCalNames, $gCalIDs ) );
+
+		updateSettings( array( 'gCal_list' => $gCal_list ) );
+		updateStats( 'calendar' );
+
+		// Time to exit!
+		redirectexit( 'action=managecalendar;sa=gCalSettings');
+	}
+}
+]]></add>
+		</operation>
+	</file>
+
+	<file name="$themedir/ManageCalendar.template.php">
+		<operation>
+			<search position="replace"><![CDATA[		<form acton=', $scripturl, '?action=managecalendar;sa=gCalSettings" method="post" accept-charset="', $context['character_set'], '"> ]]></search>
+			<add><![CDATA[		<form action=', $scripturl, '?action=managecalendar;sa=gCalSettings method="post" accept-charset="', $context['character_set'], '">]]></add>
+		</operation>
+
+		<operation>
+			<search position="replace"><![CDATA[				<td align="right">',$txt['gCalS3'],'</label>:</td>]]></search>
+			<add><![CDATA[				<td align="right">',$txt['gCalS3'],':</td>]]></add>
+		</operation>
+
+		<operation>
+			<search position="replace"><![CDATA[				<td align="right">',$txt['gCalS4'],'</label>:</td>]]></search>
+			<add><![CDATA[				<td align="right">',$txt['gCalS4'],':</td>]]></add>
+		</operation>
+
+		<operation>
+			<search position="replace"><![CDATA[				<td><input type="password" name="gCal_pass" value="', !empty($modSettings['gCal_pass']) ? $modSettings['gCal_pass'] : '', '" size="40" /></td>
+			</tr>
+			<tr class="windowbg2">
+				<td align="right" colspan="2">
+					<input type="submit" value="', $txt['save_settings'], '" />
+				</td>
+			</tr>
+		</table>
+		<input type="hidden" name="sc" value="', $context['session_id'], '" />
+		</form>';
+}
+
+]]></search>
+			<add><![CDATA[				<td><input type="password" name="gCal_pass" value="', !empty($modSettings['gCal_pass']) ? $modSettings['gCal_pass'] : '', '" size="40" /></td>
+			</tr>
+			<tr class="windowbg2">
+				<td align="right" colspan="2">
+					<input type="submit" value="', $txt['save_settings'], '" />
+				</td>
+			</tr>
+		</table>
+		<input type="hidden" name="sc" value="', $context['session_id'], '" />
+		<input type="hidden" name="gCal_creds" value="', $txt['gCalS1'], '" />
+		</form>';
+
+	/* Select the calendar if the context isn't empty... */
+	if( !empty( $modSettings['gCal_list'] ) )
+	{
+		echo '
+			<hr />
+			<form action=', $scripturl, '?action=managecalendar;sa=gCalSettings method="post" accept-charset="', $context['character_set'], '">
+			<table border="0" cellspacing="0" cellpadding="4" align="center" th="80%" class="tborder">
+				<tr class="titlebg">
+					<td colspan="2">',$txt['gCalS5'],'</td>
+				</tr>
+				<tr class="windowbg2">
+					<td align="right">
+						<select name="gCalSync-calendar">';
+		// Grab the calendars from the context
+		$cleanList = unserialize( $modSettings['gCal_list'] );
+		$gCalName = '';
+		$gCalID = '';
+
+		foreach ( $cleanList as $gCalName => $gCalID )
+		{
+			echo '  
+				<option value="', $gCalID, '"';
+				if( !empty( $modSettings['gCal_calID'] ) )
+				{
+					echo $gCalID==$modSettings['gCal_calID']
+					? ' selected="selected"'
+					: '', '>', $gCalName, '</option>';
+				}
+				else
+				{
+					echo '>', $gCalName, '</option>';
+				}
+
+		}
+		echo '
+						</select>
+					</td>
+				</tr>
+				<tr class="windowbg2">
+					<td align="right">
+						<input type="submit" value="', $txt['save_settings'], '" />
+					</td>
+				</tr>
+			</table>
+			<input type="hidden" name="sc" value="', $context['session_id'], '" />
+			<input type="hidden" name="gCal_cals" value="', $txt['gCalS1'], '" />
+
+			</form>';
+
+	}
+}
+]]></add>
+		</operation>
+	</file>
+</modification>
