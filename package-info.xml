@@ -30,7 +30,7 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>1.0.10</version>
+	<version>1.0.10.1</version>
 	
 	<install for="1.1.11">
 		<readme type="file">read.me</readme>
@@ -80,6 +80,11 @@
 		<modification>upgrade-109.xml</modification>
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 		<code>upgrade-109.php</code>
+	</upgrade>
+
+	<upgrade from="1.0.10">
+		<readme type="file">upgrade.me</readme>
+		<modification>upgrade-10101.xml</modification>
 	</upgrade>
 
 </package-info>
