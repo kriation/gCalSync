@@ -55,6 +55,12 @@
  * > Encrypt Google Password
 */
 
+// Check for PHP version compatibility for gCalSync due to Zend needing v5
+if ( substr( phpversion(), 0, 1 ) < 5 )
+{
+    fatal_error( 'gCalSync: Requires PHP v5 or above.' );
+}
+
 // Adding the additional parameters to smf_settings
 $new_settings = array( 
 		'gCal_user' => '',
@@ -70,8 +76,7 @@ if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
 }
 elseif( !defined( 'SMF' ) )
 {
-	die( '<b>No Good:</b> 
-	This is not located in the same location as SMF\'s index.php.' );
+	die( 'SMF not defined.' );
 }
 
 // Fix the array into a database compliant form factor
@@ -79,6 +84,7 @@ $string = '';
 foreach( $new_settings as $x => $y )
 {
 	// This is so bad, but it works! :)
+    	// Retract the above statement; this is genius.
 	$string .= '(\'' . $x . '\', \'' . $y . '\'),';
 }
 
@@ -92,14 +98,16 @@ if( $string != '' )
 				(variable, value) VALUES" .
 				substr( $string, 0, -1 ), 
 				__FILE__, __LINE__ );
+	if( !$result )
+	{
+		fatal_error( 'gCalSync: New settings insertion failed!' );
+	}
+}
+else
+{
+	fatal_error( 'gCalSync: String was empty!!' );
 }
 
-// It broke - Shit.
-if( $result === false )
-{
-	die( '<b>Really Not Good:</b>
-		Settings insertion failed!' );
-}
 
 // As long as things went well up there, let's add the new table! :)
 $result = db_query( "CREATE TABLE IF NOT EXISTS {$db_prefix}gCal ( 
@@ -108,11 +116,8 @@ $result = db_query( "CREATE TABLE IF NOT EXISTS {$db_prefix}gCal (
 			PRIMARY KEY (`ID_EVENT`) )",
 		   	__FILE__, __LINE__ ); 
 
-// It broke - Shit x 2!
-// God knows how/why we got here...
-if( $result === false )
+if( !$result )
 {
-	die( '<b>Really, Really Not Good:</b>
-			Table insertion failed!' );
+	fatal_error( 'gCalSync: Table creation failed!' );
 }
 ?>

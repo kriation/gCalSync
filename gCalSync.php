@@ -41,7 +41,8 @@ function gCalSync_Init( $user, $pass )
 	/* Without Zend, this does not work */
     	$zendLoc = getcwd() . '/Sources';
 	set_include_path( get_include_path() . PATH_SEPARATOR . $zendLoc );
-
+	
+	// require_once will throw E_COMPILE_ERROR halting the script
 	require_once 'Zend/Loader.php';
 	Zend_Loader::loadClass('Zend_Gdata');
 	Zend_Loader::loadClass('Zend_Gdata_AuthSub');
@@ -49,10 +50,22 @@ function gCalSync_Init( $user, $pass )
 	Zend_Loader::loadClass('Zend_Gdata_HttpClient');
 	Zend_Loader::loadClass('Zend_Gdata_Calendar');
 
+	if( !($user && $pass ) )
+	{
+	    fatal_lang_error('gCalE7');
+	}
+
 	/* Attempt to establish a connection to Google */
-	$gClient = Zend_Gdata_ClientLogin::getHttpClient(
-			$user, $pass,
-			Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
+	try {
+		$gClient = Zend_Gdata_ClientLogin::getHttpClient(
+				$user, $pass,
+				Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
+	}
+	catch( Zend_Gdata_App_HttpException $e )
+	{
+		fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+	}
+
 	if( !$gClient )
 	{
 		fatal_lang_error('gCalE1');
@@ -60,6 +73,7 @@ function gCalSync_Init( $user, $pass )
 
 	/* Attempt to grab a Google Calendar object */
 	$gCal = new Zend_Gdata_Calendar( $gClient );
+
 	if( !$gCal )
 	{
 		fatal_lang_error('gCalE2');
@@ -114,6 +128,13 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	$result = db_query( 
 		"SELECT MAX(ID_EVENT) from {$db_prefix}calendar", 
 		__FILE__, __LINE__ );
+	
+	if( !$result )
+	{
+		fatal_lang_error('gCalE8');
+	}
+
+
 	/* We 'assume' that there's only going to be one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -126,6 +147,13 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 		"SELECT ID_TOPIC from {$db_prefix}calendar 
 		WHERE ID_EVENT=$eventID", 
 		__FILE__, __LINE__ );
+
+
+	if( !$result )
+	{
+		fatal_lang_error('gCalE8');
+	}
+
 	/* Again... assuming that there's only one row returned */
 	while( $row = mysql_fetch_assoc( $result ) )
 	{
@@ -140,19 +168,24 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	}
 	else
 	{
-		$topicLink = $boardurl;
+		$topicLink = $boardurl 
+		    .'/index.php?action=calendar;year='
+		    . $year 
+		    . ';month='
+		    . $month;
 	}
 
-	/* TODO:
-	 * Combine step 1 and 2 into a join to hit the database once, 
-	 * instead of twice.
-	*/
 
         /* Grab the Google Calendar URI */
         $result = db_query(
                 "SELECT value from {$db_prefix}settings
                 WHERE variable='gCal_calID'",
                 __FILE__, __LINE__ );
+	if( !$result )
+	{
+		fatal_lang_error('gCalE8');
+	}
+
         while( $row = mysql_fetch_assoc( $result ) ) 
         {
             $gCal_calID = $row['value'];
@@ -195,7 +228,15 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	$event->when = array( $when );
 
 	/* 3,2,1 - Insert */
-	$event = $gCal->insertEvent( $event, $gCal_calID );
+	try
+	{
+		$event = $gCal->insertEvent( $event, $gCal_calID );
+	}
+	catch( Zend_Gdata_App_HttpException $e )
+	{
+		fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+	}	
+
 	
 	/* As long as the above worked properly, we can move forward
 	 * and add the associated Google event ID to the mapping table
@@ -208,10 +249,15 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	/* Use it. */
 	if( $gCal_eventID )
 	{
-		db_query( 
+		$result = db_query( 
 		"INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID) 
 		VALUES( $eventID, '$gCal_eventID' )",
 	       	__FILE__, __LINE__ );
+
+		if( !$result )
+		{
+			fatal_lang_error('gCalE8');
+		}
 	}
 
 	/* I think we're done. :) */
@@ -222,9 +268,6 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
  * Once we have it, we fetch the entry from Google
  * As long as it's valid, we can delete the entry!
  *
- * TODO:
- * 1) I need a whole host of error checking, because if this fails, 
- * it could be disastrous.
 */
 function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 {
@@ -238,43 +281,68 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 		"SELECT gCal_ID from {$db_prefix}gCal 
 		WHERE ID_EVENT=$eventID",
 	       	__FILE__, __LINE__ );
+	
+	if( !$result )
+	{
+		fatal_lang_error('gCalE8');
+	}
 
 	$numRows = mysql_num_rows( $result );
 	if( $numRows == 1 )
 	{
-		while( $row = mysql_fetch_assoc( $result ) )
-		{
-
-			$gCalID = $row['gCal_ID'];
-			
-			/* Connect to Google and retrieve the event's edit URL */
-			$gEvent = $gCal->getCalendarEventEntry( $gCalID );
-	
-			/* If we're successful... pull the trigger... */
-			/* TODO: Catch an exception here... */
-			$gEvent->delete();
+		$row = mysql_fetch_assoc( $result );
+		$gCalID = $row['gCal_ID'];
 		
-			db_query( 
-				"DELETE FROM {$db_prefix}gCal 
-				WHERE ID_EVENT=$eventID", 
-				__FILE__, __LINE__ );
+		// Connect to Google and retrieve the event's edit URL 
+		try
+		{
+			$gEvent = 
+				$gCal->getCalendarEventEntry( $gCalID );
+		}
+		catch( Zend_Gdata_App_InvalidArgumentException $e )
+		{
+			fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+		}
+		catch( Zend_Gdata_App_HttpException $e )
+		{
+			fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+		}
+
+		/* If we're successful... pull the trigger... */
+		try
+		{
+			$gEvent->delete();
+		}
+		catch( Zend_Gdata_App_InvalidArgumentException $e )
+		{
+			fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+		}
+		catch( Zend_Gdata_App_HttpException $e )
+		{
+			fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+		}	
+
+		$result = db_query( 
+			"DELETE FROM {$db_prefix}gCal 
+			WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+
+		if( !$result )
+		{
+			fatal_lang_error('gCalE8');
 		}
 	}
 	elseif( $numRows == 0 )
 	{
-	    /* Don't do anything... 
-	     * TODO: Find something to do... :)
-	     */
+		fatal_lang_error('gCalE8');
 	}
 	elseif( $numRows > 1 )
 	{
-	    fatal_lang_error('gCalE5');
+		fatal_lang_error('gCalE5');
 	}
 	elseif( $numRows == FALSE )
 	{
-	    fatal_lang_error('gCalE6');
+		fatal_lang_error('gCalE6');
 	}
-	mysql_free_result( $result );
 
 
 	/* That was easy... :) */
@@ -303,8 +371,12 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 	/* Retrieve the Google event URL from the smf DB */
 	$result = db_query( 
 		"SELECT gCal_ID from {$db_prefix}gCal 
-		WHERE ID_EVENT=$eventID", 
-		__FILE__, __LINE__ );
+		WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
+	
+	if( !$result )
+	{
+		fatal_lang_error('gCalE8');
+	}
 
 	$numRows = mysql_num_rows( $result );
 	if( $numRows == 1 )
@@ -313,7 +385,18 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 		{
 			$gCalID = $row['gCal_ID'];
 			/* Connect to Google and retrieve the event's edit URL */
-			$event = $gCal->getCalendarEventEntry( $gCalID );
+			try
+			{
+				$event = $gCal->getCalendarEventEntry( $gCalID );
+			}
+			catch( Zend_Gdata_App_InvalidArgumentException $e )
+			{
+				fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+			}
+			catch( Zend_Gdata_App_HttpException $e )
+			{
+				fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+			}
 	
 			// If $span == 0, event lasts 1 day, if it's >0, add 1
 			if( $span > 0 )
@@ -340,22 +423,32 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 			/* If the above was put together properly, 
 			 * this should work... 
 			 */
-			$event->save();
+			try 
+			{
+				$event->save();
+			}
+			catch( Zend_Gdata_App_InvalidArgumentException $e )
+			{
+				fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+			}
+			catch( Zend_Gdata_App_HttpException $e )
+			{
+				fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
+			}
+
 		}
 	}
 	elseif( $numRows == 0 )
 	{
-	    /* Don't do anything... 
-	     * TODO: Find something to do... :)
-	     */
+		fatal_lang_error('gCalE8');
 	}
 	elseif( $numRows > 1 )
 	{
-	    fatal_lang_error('gCalE5');
+		fatal_lang_error('gCalE5');
 	}
 	elseif( $numRows == FALSE )
 	{
-	    fatal_lang_error('gCalE6');
+		fatal_lang_error('gCalE6');
 	}
 	
 	mysql_free_result( $result );

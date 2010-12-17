@@ -28,7 +28,7 @@
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 	
 	<id>kriation:gCalSync</id>
-	<version>1.0.10.1</version>
+	<version>1.1</version>
 
 	<!-- ************************************* -->
 	<!-- gCalSync English Language Additions   -->
@@ -41,10 +41,11 @@
 $txt['gCalE1'] = 'Could not connect to the Google Calendar service!';
 $txt['gCalE2'] = 'Could not establish a Google Calendar object!';
 $txt['gCalE3'] = 'Could not use Google Calendar object for insert!';
-$txt['gCalE4'] = 'Could not use Google Calendar object for insert!';
+$txt['gCalE4'] = 'Could not use Google Calendar object for remove!';
 $txt['gCalE5'] = 'Result returned more than one row?!?!';
 $txt['gCalE6'] = 'Query failed during remove!';
 $txt['gCalE7'] = 'gUser and/or gPass have not been set!';
+$txt['gCalE8'] = 'Result was empty!';
 
 // gCalSync Static Fields
 $txt['gCalS1'] = 'gCalSync Settings';
@@ -67,10 +68,11 @@ $txt['gCalS5'] = 'Pick a Calendar...';
 $txt['gCalE1'] = 'Could not connect to the Google Calendar service!';
 $txt['gCalE2'] = 'Could not establish a Google Calendar object!';
 $txt['gCalE3'] = 'Could not use Google Calendar object for insert!';
-$txt['gCalE4'] = 'Could not use Google Calendar object for insert!';
+$txt['gCalE4'] = 'Could not use Google Calendar object for remove!';
 $txt['gCalE5'] = 'Result returned more than one row?!?!';
 $txt['gCalE6'] = 'Query failed during remove!';
 $txt['gCalE7'] = 'gUser and/or gPass have not been set!';
+$txt['gCalE8'] = 'Result was empty!';
 
 // gCalSync Static Fields
 $txt['gCalS1'] = 'gCalSync Settings';

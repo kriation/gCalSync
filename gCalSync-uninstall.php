@@ -23,10 +23,6 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
 ************************************************************************/
 
-/* TODO:
- * 1) Backup the smf_gCal table containing the ID links
-*/
-
 // Checking where this is being called from
 if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
 {
@@ -34,65 +30,29 @@ if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
 }
 elseif( !defined( 'SMF' ) )
 {
-	die( '<b>No Good:</b> 
-	This is not located in the same location as SMF\'s index.php.' );
+	die( 'SMF not defined.' );
 }
 
-// Drop the SMF Settings
-$result = db_query( 
-	"DELETE FROM {$db_prefix}settings 
-	WHERE variable='gCal_user'", 
-	__FILE__, __LINE__ );
+// gCalSync settings to drop
+$settings = array( 'gCal_user', 'gCal_pass', 'gCal_list', 'gCal_calID');
 
-// It broke - Shit.
-if( $result === false )
+foreach( $settings as $setting )
 {
-	die( '<b>Really Not Good:</b>
-		Delete from settings failed! ');
+	$result = db_query( "DELETE FROM {$db_prefix}settings 
+				WHERE variable='" . $setting . "'", 
+				__FILE__, __LINE__ );
+	if( !$result )
+	{
+		fatal_error( "gCalSync: Delete of $setting from settings failed! ");
+	}
 }
 
-$result = db_query( 
-	"DELETE FROM {$db_prefix}settings 
-	WHERE variable='gCal_pass'", 
-	__FILE__, __LINE__ );
-
-// It broke - Shit.
-if( $result === false )
-{
-	die( '<b>Really Not Good:</b>
-		Delete from settings failed! ');
-}
-
-$result = db_query( 
-	"DELETE FROM {$db_prefix}settings 
-	WHERE variable='gCal_list'", 
-	__FILE__, __LINE__ );
-
-// It broke - Shit.
-if( $result === false )
-{
-	die( '<b>Really Not Good:</b>
-		Delete from settings failed! ');
-}
-
-$result = db_query( 
-	"DELETE FROM {$db_prefix}settings 
-	WHERE variable='gCal_calID'",
-	__FILE__, __LINE__ );
-
-// It broke - Shit.
-if( $result === false )
-{
-	die( '<b>Really Not Good:</b>
-		Delete from settings failed! ');
-}
-
+// gCalSync table deletion
 $result = db_query( "DROP TABLE {$db_prefix}gCal", __FILE__, __LINE__ );
-// It broke - Shit.
-if( $result === false )
+
+if( !$result )
 {
-	die( '<b>Really Not Good:</b>
-		Drop gCal table has failed! ');
+	fatal_error( 'gCalSync: Dropping of the gCalSync table failed!');
 }
 
 ?>

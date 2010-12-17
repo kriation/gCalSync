@@ -29,31 +29,7 @@
 	
 	<id>kriation:gCalSync</id>
 	<version>1.0.10</version>
-<!--	
-	<file name="$sourcedir/gCalSync.php">
-		<operation>
-			<search position="after"><![CDATA[	/* /me sighs - Let's build the start and end dates... again.]]></search>
-			<add><![CDATA[
-        /* Grab the Google Calendar URI */
-        $result = db_query(
-                "SELECT value from {$db_prefix}settings
-                WHERE variable='gCal_calID'",
-                __FILE__, __LINE__ );
-        while( $row = mysql_fetch_assoc( $result ) ) 
-        {   
-            $gCal_calID = $row['value'];
-        }   
-        mysql_free_result( $result );
-    
 
-]]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[	$event = $gCal->insertEvent( $event );]]>
-			<add><![CDATA[	$event = $gCal->insertEvent( $event, $gCal_calID );]]></add>
-		</operation>
-	</file>
--->
 	<file name="$languagedir/Modifications.english.php">
 		<operation>
 			<search position="end" />

@@ -50,8 +50,7 @@ if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
 }
 elseif( !defined( 'SMF' ) ) 
 {
-        die( '<b>No Good:</b> 
-        This is not located in the same location as SMF\'s index.php.' );
+        die( 'SMF not defined.' );
 }
 
 // Fix the array into a database compliant form factor
@@ -59,7 +58,8 @@ $string = '';
 foreach( $new_settings as $x => $y )
 {
         // This is so bad, but it works! :)
-        $string .= '(\'' . $x . '\', \'' . $y . '\'),';
+	// Retract the above statement; this is genius.
+	$string .= '(\'' . $x . '\', \'' . $y . '\'),';
 }
 
 // Insert the data into the database (cross fingers 'Y')
@@ -72,21 +72,13 @@ if( $string != '' )
                                 (variable, value) VALUES" .
                                 substr( $string, 0, -1 ),  
                                 __FILE__, __LINE__ );
-	// It broke - Shit.
-	if( $result === false )
+	if( !$result )
 	{
-	        die( '<b>Really Not Good:</b>
-	                Settings insertion failed!' );
+		fatal_error( 'gCalSync: New settings insertion failed!' );
 	}
 }
 else
 {
-
-	// It broke - Shit.
-	if( $result === false )
-	{
-	        die( '<b>Really Not Good:</b>
-	                Settings insertion failed!' );
-	}
+	fatal_error( 'gCalSync: String was empty!!' );    
 }
 ?>
