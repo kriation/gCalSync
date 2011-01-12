@@ -3,7 +3,7 @@
 * gCalSync-uninstall.php						*
 *************************************************************************
 * gCalSync 								*
-* Copyright 2009-2010 Armen Kaleshian <armen@kriation.com>		*
+* Copyright 2009-2011 Armen Kaleshian <armen@kriation.com>		*
 * License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
 *									*
 * An enhancement for SMF to synchronize forum calendar entries with a	*
