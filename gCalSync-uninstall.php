@@ -34,16 +34,16 @@ elseif( !defined( 'SMF' ) )
 }
 
 // gCalSync settings to drop
-$settings = array( 'gCal_user', 'gCal_pass', 'gCal_list', 'gCal_calID');
+$gCalSettings = array( 'gCal_user', 'gCal_pass', 'gCal_list', 'gCal_calID');
 
-foreach( $settings as $setting )
+foreach( $gCalSettings as $gCalSetting )
 {
 	$result = db_query( "DELETE FROM {$db_prefix}settings 
-				WHERE variable='" . $setting . "'", 
+				WHERE variable='" . $gCalSetting . "'", 
 				__FILE__, __LINE__ );
 	if( !$result )
 	{
-		fatal_error( "gCalSync: Delete of $setting from settings failed! ");
+		fatal_error( "gCalSync: Delete of $gCalSetting from settings failed! ");
 	}
 }
 
