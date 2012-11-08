@@ -30,9 +30,9 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>1.2</version>
+	<version>1.2.1</version>
 	
-	<install for="1.1.11-1.1.13">
+	<install for="1.1.11-1.1.16">
 		<readme type="file">read.me</readme>
 		<code type="file">gCalSync-install.php</code>
 		<modification>gCalSync.xml</modification>
@@ -40,7 +40,7 @@
 		<require-dir name="Zend" destination="$sourcedir" />
 	</install>
 
-	<uninstall for="1.1.11-1.1.13">
+	<uninstall for="1.1.11-1.1.16">
 		<code type="file">gCalSync-uninstall.php</code>
 		<modification reverse="true">gCalSync.xml</modification>
 		<remove-file name="$sourcedir/gCalSync.php" />
