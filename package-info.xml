@@ -4,7 +4,7 @@
 * package-info.xml							*
 *************************************************************************
 * gCalSync 								*
-* Copyright 2009-2011 Armen Kaleshian <armen@kriation.com>		*
+* Copyright 2009-2015 Armen Kaleshian <armen@kriation.com>		*
 * License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
 *									*
 * An enhancement for SMF to synchronize forum calendar entries with a	*
@@ -30,80 +30,20 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>1.2.1</version>
+	<version>2.0.0</version>
 	
-	<install for="1.1.11-1.1.16">
-		<readme type="file">read.me</readme>
+	<install for="2.0.10">
+		<readme type="file">README.md</readme>
 		<code type="file">gCalSync-install.php</code>
 		<modification>gCalSync.xml</modification>
+		<require-dir name="google-api" destination="$sourcedir" />
 		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<require-dir name="Zend" destination="$sourcedir" />
 	</install>
 
-	<uninstall for="1.1.11-1.1.16">
+	<uninstall for="2.0.10">
 		<code type="file">gCalSync-uninstall.php</code>
 		<modification reverse="true">gCalSync.xml</modification>
 		<remove-file name="$sourcedir/gCalSync.php" />
-		<remove-dir name="$sourcedir/Zend" />
+		<require-dir name="$sourcedir/google-api" />
 	</uninstall>
-
-	<!-- Upgrade list -->
-	<upgrade from="1.0.6">
-		<readme type="file">upgrade.me</readme>
-		<modification>upgrade-106.xml</modification>
-		<modification>upgrade-107.xml</modification>
-		<modification>upgrade-108.xml</modification>
-		<modification>upgrade-109.xml</modification>
-		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</code>
-	</upgrade>
-
-	<upgrade from="1.0.7">
-		<readme type="file">upgrade.me</readme>
-		<modification>upgrade-107.xml</modification>
-		<modification>upgrade-108.xml</modification>
-		<modification>upgrade-109.xml</modification>
-		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</code>
-	</upgrade>
-
-	<upgrade from="1.0.8">
-		<readme type="file">upgrade.me</readme>
-		<modification>upgrade-108.xml</modification>
-		<modification>upgrade-109.xml</modification>
-		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</code>
-	</upgrade>
-
-	<upgrade from="1.0.9">
-		<readme type="file">upgrade.me</readme>
-		<modification>upgrade-109.xml</modification>
-		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<code>upgrade-109.php</code>
-	</upgrade>
-
-	<upgrade from="1.0.10">
-		<readme type="file">upgrade.me</readme>
-		<modification>upgrade-10101.xml</modification>
-	</upgrade>
-
-	<upgrade from="1.0.10.1">
-		<readme type="file">upgrade.me</readme>
-		<create-file name="gCalSync-v1.0.10.2.touch"
-				destination="$sourcedir" />
-		<remove-file name="$sourcedir/gCalSync-v1.0.10.2.touch" />
-	</upgrade>
-
-	<upgrade from="1.0.10.2">
-                <readme type="file">upgrade.me</readme>
-                <modification>upgrade-11.xml</modification>
-                <require-dir name="Zend" destination="$sourcedir" />
-                <require-file name="gCalSync.php" destination="$sourcedir" />
-        </upgrade>
-
-	<upgrade from="1.1">
-		<readme type="file">upgrade.me</readme>
-		<require-dir name="Zend" destination="$sourcedir" />
-	</upgrade>
-
 </package-info>
