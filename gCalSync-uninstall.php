@@ -3,7 +3,7 @@
 * gCalSync-uninstall.php						*
 *************************************************************************
 * gCalSync 								*
-* Copyright 2009-2011 Armen Kaleshian <armen@kriation.com>		*
+* Copyright 2009-2015 Armen Kaleshian <armen@kriation.com>		*
 * License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
 *									*
 * An enhancement for SMF to synchronize forum calendar entries with a	*
@@ -23,36 +23,29 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
 ************************************************************************/
 
-// Checking where this is being called from
-if( file_exists( dirname( __FILE__ ) . '/SSI.php' ) && !defined( 'SMF' ) )
-{
-	require_once( dirname( __FILE__ ) . '/SSI.php' );
-}
-elseif( !defined( 'SMF' ) )
-{
-	die( 'SMF not defined.' );
-}
+if (!defined('SMF'))
+    die('Hacking attempt...');
 
-// gCalSync settings to drop
-$gCalSettings = array( 'gCal_user', 'gCal_pass', 'gCal_list', 'gCal_calID');
+// List of gCalSync parameters to remove from settings
+$gcalsync_settings = array( 
+    'gcal_sec', 
+    'gcal_auth', 
+    'gcal_list', 
+    'gcal_calid');
 
-foreach( $gCalSettings as $gCalSetting )
+foreach ( $gcalsync_settings as $setting )
 {
-	$result = db_query( "DELETE FROM {$db_prefix}settings 
-				WHERE variable='" . $gCalSetting . "'", 
-				__FILE__, __LINE__ );
-	if( !$result )
-	{
-		fatal_error( "gCalSync: Delete of $gCalSetting from settings failed! ");
-	}
+    // Remove the gCalSync settings from the settings table
+    $smcFunc['db_query']('', ' 
+	DELETE FROM {db_prefix}settings
+	WHERE variable = {string:gcalsync_setting}',
+	array( 'gcalsync_setting' => $setting )
+    );
 }
 
-// gCalSync table deletion
-$result = db_query( "DROP TABLE {$db_prefix}gCal", __FILE__, __LINE__ );
+// Without this definition, we don't have access to db_drop_table
+db_extend('packages');
 
-if( !$result )
-{
-	fatal_error( 'gCalSync: Dropping of the gCalSync table failed!');
-}
-
+// Drop gCalSync table
+$smcFunc['db_drop_table']( 'gcalsync' );
 ?>
