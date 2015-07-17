@@ -26,14 +26,14 @@
 if (!defined('SMF'))
     die('Hacking attempt...');
 
-// Adding the additional parameters to smf_settings
-$new_settings = array( 
+// List of gCalSync parameters to add to settings
+$gcalsync_settings = array( 
     'gcal_sec' => '',
     'gcal_auth' => '', 
     'gcal_list' => '',
     'gcal_calid' => '');
 
-foreach ( $new_settings as $x => $y )
+foreach ( $gcalsync_settings as $x => $y )
 {
     // Insert the new settings for gCalSync to the settings table
     $smcFunc['db_insert'](
