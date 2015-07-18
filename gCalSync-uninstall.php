@@ -23,8 +23,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
 ************************************************************************/
 
-if (!defined('SMF'))
-    die('Hacking attempt...');
+if ( !defined( 'SMF' ) )
+    die( 'Hacking attempt...' );
 
 // List of gCalSync parameters to remove from settings
 $gcalsync_settings = array( 
