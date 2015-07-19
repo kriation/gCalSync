@@ -3,7 +3,7 @@
 * gCalSync.php								*
 *************************************************************************
 * gCalSync 								*
-* Copyright 2009-2011 Armen Kaleshian <armen@kriation.com>		*
+* Copyright 2009-2015 Armen Kaleshian <armen@kriation.com>		*
 * License: GNU GPL (v3 or later). See LICENSE.txt for details.		*
 *									*
 * An enhancement for SMF to synchronize forum calendar entries with a	*
@@ -23,64 +23,106 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
 ************************************************************************/
 
-/* Protecting from bad people */
 if( !defined( 'SMF' ) )
 {
 	die( 'Hacking attempt...' );
 }
 
-/* gCalSync_init( Google User, Google Password )
- * 	Rope in Zend to talk to Google
- *	Load some entries from modSettings
- *	Instantiate a connection to Google
- *	Instantiate a Google Calendar object from Zend
- *	Return Google Calendar object
-*/
-function gCalSync_Init( $user, $pass )
+function gcalsync_setup( $gcal_sec = NULL )
 {
-	/* Without Zend, this does not work */
-    	$zendLoc = getcwd() . '/Sources';
-	set_include_path( get_include_path() . PATH_SEPARATOR . $zendLoc );
-	
-	// require_once will throw E_COMPILE_ERROR halting the script
-	require_once 'Zend/Loader.php';
-	Zend_Loader::loadClass('Zend_Gdata');
-	Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-	Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-	Zend_Loader::loadClass('Zend_Gdata_HttpClient');
-	Zend_Loader::loadClass('Zend_Gdata_Calendar');
+    // Insert JSON provided by Google for API access
+    if ( !empty( $gcal_sec )
+    {
+	$gcal_sec = file_get_contents( 'gcalsync-secret.json' );
+    }
 
-	if( !($user && $pass ) )
+    $dbResult = $smcFunc['db_query']( '', '
+		UPDATE {db_prefix}settings
+		SET value = {string:gcal_sec_json}
+		WHERE variable = {string:gcal_sec}',
+		array(	'gcal_sec_json' => $gcal_sec,
+		    'gcal_sec' => 'gcal_sec' )
+		);
+}
+
+function gcalsync_init()
+{
+    // Constants that most likely will never change
+    define( 'ACCESS_TYPE', 'offline' );
+    define( 'APPLICATION_NAME', 'gCalSync' );
+    define( 'SCOPES', Google_Service_Calendar::CALENDAR );
+
+    $gClient = new Google_Client();
+    $gClient->setAccessType( ACCESS_TYPE );
+    $gClient->setApplicationName( APPLICATION_NAME );
+    $gClient->setScopes( SCOPES );
+  
+    // Get authConfig JSON string from DB
+    $dbResult = $smcFunc['db_query']( '', '
+	SELECT value
+	FROM {db_prefix}settings
+	WHERE variable = {string:gcal_sec}',
+	array( 'gcal_sec' => 'gcal_sec' )
+    );
+    
+    if ( !empty( $dbResult ) )
+    {
+	$authConfig = $smcFunc['db_fetch_assoc']( $dbResult )[ 'value' ];
+	$gClient->setAuthConfig( $authConfig );
+    }
+    else
+	die( log_error( 'gCalSync: Database configuration not defined.' ) );
+
+    return $gClient;
+}
+
+function gcalsync_getAuthUrl( $gClient = NULL )
+{
+    // Get the Google Authentication URL and return it to the caller
+    if ( !empty( $gClient ) )
+    {
+	$authUrl = $gClient->createAuthUrl();
+    }
+    else
+	$authUrl = NULL;
+
+    return $authUrl;
+} 
+
+function gcalsync_auth( $gClient = NULL, $authCode = NULL )
+{
+    if ( !empty( $gClient ) && !empty( $authCode ) )
+    {
+	$accessToken = NULL;
+	// Authenticate against Google API
+	$accessToken = $gClient->authenticate( $authCode );
+
+	if( !empty( $accessToken ) )
 	{
-	    fatal_lang_error('gCalE7');
-	}
+	    // Write the accessToken to persistance
+	    $dbResult = $smcFunc['db_query']( '', '
+		UPDATE {db_prefix}settings
+		SET value = {string:accessToken}
+		WHERE variable = {string:gcal_auth}',
+		array(	'accessToken' => $accessToken,
+		    'gcal_auth' => 'gcal_auth' )
+	    );
 
-	/* Attempt to establish a connection to Google */
-	try {
-		$gClient = Zend_Gdata_ClientLogin::getHttpClient(
-				$user, $pass,
-				Zend_Gdata_Calendar::AUTH_SERVICE_NAME );
+	    if ( $dbResult == FALSE )
+		die( log_error( 'gCalSync: Unable to write token to DB' ) );
 	}
-	catch( Zend_Gdata_App_HttpException $e )
+	else
 	{
-		fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-	}
-
-	if( !$gClient )
-	{
-		fatal_lang_error('gCalE1');
-	}
-
-	/* Attempt to grab a Google Calendar object */
-	$gCal = new Zend_Gdata_Calendar( $gClient );
-
-	if( !$gCal )
-	{
-		fatal_lang_error('gCalE2');
-	}
-
-	/* Return the Google Calendar object for further usage */
-	return $gCal;
+	    die( 
+		log_error( 'gCalSync: Authentication to Google failed.' ) );
+       	}
+    }
+    else
+    {
+	die( 
+	    log_error( 
+		'gCalSync: Client object and/or authCode are null.' ) );
+    }
 }
 
 /* gCalSync_Insert( SMF Database Prefix, SMF Board URL,
