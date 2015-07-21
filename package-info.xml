@@ -44,6 +44,6 @@
 		<code type="file">gCalSync-uninstall.php</code>
 		<modification reverse="true">gCalSync.xml</modification>
 		<remove-file name="$sourcedir/gCalSync.php" />
-		<require-dir name="$sourcedir/google-api" />
+		<remove-dir name="$sourcedir/google-api" />
 	</uninstall>
 </package-info>
