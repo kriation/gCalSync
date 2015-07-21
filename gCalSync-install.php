@@ -55,11 +55,11 @@ $smcFunc['db_create_table'](
 	array(
 	    'name' => 'id_event',
 	    'type' => 'smallint',
-	    'null' => 'false' ),
+	    'null' => FALSE ),
 	array(
 	    'name' => 'id_google_entry',
 	    'type' => 'varchar',
-	    'null' => 'false',
+	    'null' => FALSE,
 	    'size' => 40 )
     ),
     array(
