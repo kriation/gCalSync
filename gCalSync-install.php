@@ -68,5 +68,5 @@ $smcFunc['db_create_table'](
 	    'columns' => array( 'id_event' ),
 	    'type' => 'primary')
     )
-)
+);
 ?>
