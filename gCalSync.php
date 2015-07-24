@@ -23,10 +23,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
 ************************************************************************/
 
-if( !defined( 'SMF' ) )
-{
-	die( 'Hacking attempt...' );
-}
+if ( !defined( 'SMF' ) )
+    die( 'Hacking attempt...' );
 
 function gcalsync_setup( $gcal_sec = NULL )
 {
