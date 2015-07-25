@@ -69,4 +69,14 @@ $smcFunc['db_create_table'](
 	    'type' => 'primary')
     )
 );
+
+// Database is complete. Add hooks
+add_integration_function(   'integrate_pre_include',
+			    '$sourcedir/gCalSync.php' );
+add_integration_function(   'integrate_admin_include',
+			    '$sourcedir/gCalSync-admin.php');
+add_integration_function(   'integrate_admin_areas',
+			    'add_gCalSync_menu' );
+add_integration_function(   'integrate_modify_modifications',
+			    'add_gCalSync_admin' );
 ?>

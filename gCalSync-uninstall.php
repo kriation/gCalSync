@@ -48,4 +48,14 @@ db_extend('packages');
 
 // Drop gCalSync table
 $smcFunc['db_drop_table']( 'gcalsync' );
+
+// Database is cleansed. Remove hooks
+remove_integration_function(   'integrate_pre_include',
+				'$sourcedir/gCalSync.php' );
+remove_integration_function(   'integrate_admin_include',
+				'$sourcedir/gCalSync-admin.php');
+remove_integration_function(   'integrate_admin_areas',
+				'add_gCalSync_menu' );
+remove_integration_function(   'integrate_modify_modifications',
+				'add_gCalSync_admin' );
 ?>
