@@ -29,7 +29,7 @@ if ( !defined( 'SMF' ) )
 function gcalsync_setup( $gcal_sec = NULL )
 {
     // Insert JSON provided by Google for API access
-    if ( !empty( $gcal_sec )
+    if ( !empty( $gcal_sec ) )
     {
 	$gcal_sec = file_get_contents( 'gcalsync-secret.json' );
     }
