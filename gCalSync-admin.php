@@ -1,7 +1,6 @@
-<?xml version="1.0"?>
-<!--
+<?php
 /************************************************************************
-* package-info.xml							*
+* gCalSync-admin.php							*
 *************************************************************************
 * gCalSync 								*
 * Copyright 2009-2015 Armen Kaleshian <armen@kriation.com>		*
@@ -23,29 +22,21 @@
 * You should have received a copy of the GNU General Public License	*
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.	*
 ************************************************************************/
--->
-<!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
-<package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
 
-	<id>kriation:gCalSync</id>
-	<name>gCalSync</name>
-	<type>modification</type>
-	<version>2.0.0</version>
-	
-	<install for="2.0.10">
-		<readme type="file">README.md</readme>
-		<code type="file">gCalSync-install.php</code>
-		<modification>gCalSync.xml</modification>
-		<require-dir name="google-api" destination="$sourcedir" />
-		<require-file name="gCalSync.php" destination="$sourcedir" />
-		<require-file name="gCalSync-admin.php" destination="$sourcedir" />
-	</install>
+if ( !defined( 'SMF' ) )
+    die( 'Hacking attempt...' );
 
-	<uninstall for="2.0.10">
-		<code type="file">gCalSync-uninstall.php</code>
-		<modification reverse="true">gCalSync.xml</modification>
-		<remove-file name="$sourcedir/gCalSync-admin.php" />
-		<remove-file name="$sourcedir/gCalSync.php" />
-		<remove-dir name="$sourcedir/google-api" />
-	</uninstall>
-</package-info>
+function add_gCalSync_menu( &$admin_areas )
+{
+    // As far as I'm concerned, this is voodoo.
+    $admin_areas['config']['areas']['modsettings']['subsections']['gcalsyncadmin'] = array( 'gCalSync Administration' );
+}
+
+function add_gCalSync_admin( &$subActions )
+{
+    $subActions['gcalsyncadmin'] = 'gCalSync_admin';
+}
+
+function gCalSync_admin()
+{
+}
