@@ -64,6 +64,13 @@ function gCalSync_admin()
 			$txt['msg_google_success'] .
 			'</div>';
 	$context['settings_message'] = $successFrame;
+
+	$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+	$accessToken = gcalsync_refresh( $gClient,
+	    $modSettings['gcal_auth'] );
+	( !empty( $accessToken ) ?
+	    updateSettings( array( 'gcal_auth' => $accessToken ),
+		$update = true ) : false );
     }
     else
 	$context['save_disabled'] = '';
