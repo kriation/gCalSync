@@ -113,6 +113,37 @@ function gcalsync_refresh( $gClient = NULL, $accessToken = NULL )
     return $accessToken;
 }
 
+function gcalsync_getCals( $gClient = NULL )
+{
+    if ( !empty( $gClient ) )
+    {
+	$gCalService = new Google_Service_Calendar( $gClient );
+	$gCalList = $gCalService->calendarList->listCalendarList();
+	$gCalArray = array();
+	foreach( $gCalList->getItems() as $gCalListEntry )
+	{
+	    if( empty( $gCalListEntry->getSummaryOverride() ) )
+	    {
+		$gCalArray[ $gCalListEntry->getSummary() ] =
+		    $gCalListEntry->getId();
+	    }
+	    else
+	    {
+		$gCalArray[ $gCalListEntry->getSummaryOverride() ] =
+		    $gCalListEntry->getId();
+	    }
+	}
+    }
+    else
+    {
+	die(
+	    log_error(
+		'gCalSync: Google Client object is empty!' ) );
+    }
+
+    return $gCalArray;
+}
+
 /* gCalSync_Insert( SMF Database Prefix, SMF Board URL,
 			Google Calendar Object,
    			Event Title,
