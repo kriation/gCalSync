@@ -39,4 +39,93 @@ function add_gCalSync_admin( &$subActions )
 
 function gCalSync_admin()
 {
+    global $context, $modSettings, $txt, $sc, $scripturl, $sourcedir;
+
+    loadLanguage( 'gCalSync' );
+
+    $context['settings_title'] = $txt['title_gcal_admin'];
+    $context['settings_message'] = $txt['msg_gcal_admin'];
+    $context['post_url'] = $scripturl . '?action=admin;area=modsettings;sa=gcalsyncadmin;save';
+
+    $config_vars = array();
+    ( empty( $modSettings['gcal_sec'] ) ?
+	$config_vars[] = array( 'check', 'gcal_sec_include' ) : false );
+    ( empty( $modSettings['gcal_sec'] ) ?
+	$config_vars[] = array( 'password', 'gcal_sec' ) : false );
+    ( ( !empty( $modSettings['gcal_sec'] ) &&
+	empty( $modSettings['gcal_auth'] ) ) ?
+	    $config_vars[] = array( 'password', 'gcal_auth' ) : false );
+
+    if ( !empty( $modSettings['gcal_sec'] ) &&
+	!empty( $modSettings['gcal_auth'] ) )
+    {
+	$context['save_disabled'] = '1';
+        $successFrame = '<div class="success">' .
+			$txt['msg_google_success'] .
+			'</div>';
+	$context['settings_message'] = $successFrame;
+    }
+    else
+	$context['save_disabled'] = '';
+
+    prepareDBSettingContext( $config_vars );
+
+    if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
+    {
+	if ( !empty( $_POST['gcal_sec_include'] ) )
+	{
+	    if ( $_POST['gcal_sec_include'] === '1' )
+	    {
+		$gcal_sec = file_get_contents(
+		    $sourcedir . '/gCalSync.json' );
+		$_POST['gcal_sec']['0'] = $gcal_sec;
+		$_POST['gcal_sec']['1'] = $gcal_sec;
+	    }
+	}
+	if ( !empty( $_POST['gcal_auth']['0'] ) &&
+		!empty( $_POST['gcal_auth']['1'] ) &&
+		!empty( $modSettings['gcal_sec'] ) )
+	{
+	    // Complete the authentication
+	    $gcal_sec = $modSettings['gcal_sec'];
+	    // Only if user input matches
+	    $gcal_authCode =
+		( $_POST['gcal_auth']['0'] === $_POST['gcal_auth']['1'] ) ?
+		$_POST['gcal_auth']['1'] : NULL;
+	    $gClient = gcalsync_init( $gcal_sec );
+	    $accessToken = gcalsync_auth( $gClient, $gcal_authCode );
+
+	    // Put the access token in the database
+	    $_POST['gcal_auth']['0'] = $accessToken;
+	    $_POST['gcal_auth']['1'] = $accessToken;
+	}
+    }
+
+    if ( !empty( $modSettings['gcal_sec'] ) &&
+	empty( $modSettings['gcal_auth'] ) )
+    {
+	// Kick off Google oAuth Process
+	$gcal_sec = $modSettings['gcal_sec'];
+	$gClient = gcalsync_init( $gcal_sec );
+	$authURL = gcalsync_getAuthUrl( $gClient );
+
+	// Make the oAuth URL Pretty
+	$authURL = '<a target="_blank " href="' . $authURL .
+		    '">Google oAuth URL</a>';
+	$authFrame = '<div class="windowbg2">
+			<span class="topslice">
+			    <span></span>
+			</span>
+			<div class="content"><p>' .
+			$txt['desc_oauth_url'] .
+			'</p>' .
+			$authURL . '</div></div>';
+	$context['settings_insert_below'] = $authFrame;
+    }
+    if ( isset( $_GET['save'] ) )
+    {
+	saveDBSettings( $config_vars );
+	redirectexit( 'action=admin;area=modsettings;sa=gcalsyncadmin;' .
+	    $context['session_var'] . '=' . $context['session_id'] );
+    }
 }
