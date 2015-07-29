@@ -28,6 +28,7 @@ if ( !defined( 'SMF' ) )
 
 // List of gCalSync parameters to add to settings
 $gcalsync_settings = array(
+    'gcal_sec_include' => '1',
     'gcal_sec' => '',
     'gcal_auth' => '',
     'gcal_list' => '',

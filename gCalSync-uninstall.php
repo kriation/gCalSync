@@ -28,6 +28,7 @@ if ( !defined( 'SMF' ) )
 
 // List of gCalSync parameters to remove from settings
 $gcalsync_settings = array(
+    'gcal_sec_include',
     'gcal_sec',
     'gcal_auth',
     'gcal_list',
