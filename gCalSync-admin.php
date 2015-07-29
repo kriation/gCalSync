@@ -56,6 +56,7 @@ function gCalSync_admin()
 	empty( $modSettings['gcal_auth'] ) ) ?
 	    $config_vars[] = array( 'password', 'gcal_auth' ) : false );
 
+
     if ( !empty( $modSettings['gcal_sec'] ) &&
 	!empty( $modSettings['gcal_auth'] ) )
     {
@@ -72,6 +73,12 @@ function gCalSync_admin()
 	    ( $accessToken !== $modSettings['gcal_auth'] ) ) ?
 	    updateSettings( array( 'gcal_auth' => $accessToken ),
 		$update = true ) : false );
+	    $gCalArray = gcalsync_getCals( $gClient ) );
+	( ( !empty( $modSettings['gcal_sec'] ) &&
+		!empty( $modSettings['gcal_auth'] ) ) ?
+		$config_vars[] = array( 'select', 'gcal_list',
+		    $gCalArray ) : false );
+
     }
     else
 	$context['save_disabled'] = '';
