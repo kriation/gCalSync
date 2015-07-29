@@ -31,7 +31,6 @@ $gcalsync_settings = array(
     'gcal_sec_include' => '1',
     'gcal_sec' => '',
     'gcal_auth' => '',
-    'gcal_list' => '',
     'gcal_calid' => '');
 
 foreach ( $gcalsync_settings as $x => $y )
