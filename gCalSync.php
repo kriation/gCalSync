@@ -124,13 +124,13 @@ function gcalsync_getCals( $gClient = NULL )
 	{
 	    if( empty( $gCalListEntry->getSummaryOverride() ) )
 	    {
-		$gCalArray[ $gCalListEntry->getSummary() ] =
-		    $gCalListEntry->getId();
+		$gCalArray[ $gCalListEntry->getId() ] =
+		    $gCalListEntry->getSummary();
 	    }
 	    else
 	    {
-		$gCalArray[ $gCalListEntry->getSummaryOverride() ] =
-		    $gCalListEntry->getId();
+		$gCalArray[ $gCalListEntry->getId() ] =
+		    $gCalListEntry->getSummaryOverride();
 	    }
 	}
     }
