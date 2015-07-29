@@ -27,9 +27,9 @@ if ( !defined( 'SMF' ) )
     die( 'Hacking attempt...' );
 
 // List of gCalSync parameters to add to settings
-$gcalsync_settings = array( 
+$gcalsync_settings = array(
     'gcal_sec' => '',
-    'gcal_auth' => '', 
+    'gcal_auth' => '',
     'gcal_list' => '',
     'gcal_calid' => '');
 
@@ -49,7 +49,7 @@ foreach ( $gcalsync_settings as $x => $y )
 db_extend('packages');
 
 // Create new table for gCalSync
-$smcFunc['db_create_table']( 
+$smcFunc['db_create_table'](
     'gcalsync',
     array(
 	array(
@@ -71,6 +71,8 @@ $smcFunc['db_create_table'](
 );
 
 // Database is complete. Add hooks
+add_integration_function(   'integrate_pre_include',
+			    '$sourcedir/google-api/autoload.php' );
 add_integration_function(   'integrate_pre_include',
 			    '$sourcedir/gCalSync.php' );
 add_integration_function(   'integrate_admin_include',

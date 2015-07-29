@@ -27,16 +27,16 @@ if ( !defined( 'SMF' ) )
     die( 'Hacking attempt...' );
 
 // List of gCalSync parameters to remove from settings
-$gcalsync_settings = array( 
-    'gcal_sec', 
-    'gcal_auth', 
-    'gcal_list', 
+$gcalsync_settings = array(
+    'gcal_sec',
+    'gcal_auth',
+    'gcal_list',
     'gcal_calid');
 
 foreach ( $gcalsync_settings as $setting )
 {
     // Remove the gCalSync settings from the settings table
-    $smcFunc['db_query']('', ' 
+    $smcFunc['db_query']('', '
 	DELETE FROM {db_prefix}settings
 	WHERE variable = {string:gcalsync_setting}',
 	array( 'gcalsync_setting' => $setting )
@@ -50,12 +50,14 @@ db_extend('packages');
 $smcFunc['db_drop_table']( 'gcalsync' );
 
 // Database is cleansed. Remove hooks
-remove_integration_function(   'integrate_pre_include',
+remove_integration_function(	'integrate_pre_include',
+				'$sourcedir/google-api/autoload.php' );
+remove_integration_function(	'integrate_pre_include',
 				'$sourcedir/gCalSync.php' );
-remove_integration_function(   'integrate_admin_include',
+remove_integration_function(	'integrate_admin_include',
 				'$sourcedir/gCalSync-admin.php');
-remove_integration_function(   'integrate_admin_areas',
+remove_integration_function(	'integrate_admin_areas',
 				'add_gCalSync_menu' );
-remove_integration_function(   'integrate_modify_modifications',
+remove_integration_function(	'integrate_modify_modifications',
 				'add_gCalSync_admin' );
 ?>
