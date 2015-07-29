@@ -68,7 +68,8 @@ function gCalSync_admin()
 	$gClient = gcalsync_init( $modSettings['gcal_sec'] );
 	$accessToken = gcalsync_refresh( $gClient,
 	    $modSettings['gcal_auth'] );
-	( !empty( $accessToken ) ?
+	( ( !empty( $accessToken ) &&
+	    ( $accessToken !== $modSettings['gcal_auth'] ) ) ?
 	    updateSettings( array( 'gcal_auth' => $accessToken ),
 		$update = true ) : false );
     }
