@@ -54,7 +54,7 @@ function gCalSync_admin()
 	$config_vars[] = array( 'password', 'gcal_sec' ) : false );
     ( ( !empty( $modSettings['gcal_sec'] ) &&
 	empty( $modSettings['gcal_auth'] ) ) ?
-	    $config_vars[] = array( 'password', 'gcal_auth' ) : false );
+	$config_vars[] = array( 'password', 'gcal_auth' ) : false );
 
 
     if ( !empty( $modSettings['gcal_sec'] ) &&
