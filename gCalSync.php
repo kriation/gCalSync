@@ -26,50 +26,22 @@
 if ( !defined( 'SMF' ) )
     die( 'Hacking attempt...' );
 
-function gcalsync_setup( $gcal_sec = NULL )
-{
-    // Insert JSON provided by Google for API access
-    if ( !empty( $gcal_sec ) )
-    {
-	$gcal_sec = file_get_contents( 'gcalsync-secret.json' );
-    }
-
-    $dbResult = $smcFunc['db_query']( '', '
-		UPDATE {db_prefix}settings
-		SET value = {string:gcal_sec_json}
-		WHERE variable = {string:gcal_sec}',
-		array(	'gcal_sec_json' => $gcal_sec,
-		    'gcal_sec' => 'gcal_sec' )
-		);
-}
-
-function gcalsync_init()
+function gcalsync_init( $gcal_sec )
 {
     // Constants that most likely will never change
-    define( 'ACCESS_TYPE', 'offline' );
-    define( 'APPLICATION_NAME', 'gCalSync' );
-    define( 'SCOPES', Google_Service_Calendar::CALENDAR );
+    ( defined( 'ACCESS_TYPE' ) ? true :
+	define( 'ACCESS_TYPE', 'offline' ) );
+    ( defined( 'APPLICATION_NAME' ) ? true :
+	define( 'APPLICATION_NAME', 'gCalSync' ) );
+    ( defined( 'SCOPES' ) ? true :
+	define( 'SCOPES', Google_Service_Calendar::CALENDAR ) );
 
     $gClient = new Google_Client();
     $gClient->setAccessType( ACCESS_TYPE );
     $gClient->setApplicationName( APPLICATION_NAME );
     $gClient->setScopes( SCOPES );
-  
-    // Get authConfig JSON string from DB
-    $dbResult = $smcFunc['db_query']( '', '
-	SELECT value
-	FROM {db_prefix}settings
-	WHERE variable = {string:gcal_sec}',
-	array( 'gcal_sec' => 'gcal_sec' )
-    );
-    
-    if ( !empty( $dbResult ) )
-    {
-	$authConfig = $smcFunc['db_fetch_assoc']( $dbResult )[ 'value' ];
-	$gClient->setAuthConfig( $authConfig );
-    }
-    else
-	die( log_error( 'gCalSync: Database configuration not defined.' ) );
+
+    $gClient->setAuthConfig( $gcal_sec );
 
     return $gClient;
 }
@@ -85,7 +57,7 @@ function gcalsync_getAuthUrl( $gClient = NULL )
 	$authUrl = NULL;
 
     return $authUrl;
-} 
+}
 
 function gcalsync_auth( $gClient = NULL, $authCode = NULL )
 {
@@ -95,32 +67,20 @@ function gcalsync_auth( $gClient = NULL, $authCode = NULL )
 	// Authenticate against Google API
 	$accessToken = $gClient->authenticate( $authCode );
 
-	if( !empty( $accessToken ) )
+	if( empty( $accessToken ) )
 	{
-	    // Write the accessToken to persistance
-	    $dbResult = $smcFunc['db_query']( '', '
-		UPDATE {db_prefix}settings
-		SET value = {string:accessToken}
-		WHERE variable = {string:gcal_auth}',
-		array(	'accessToken' => $accessToken,
-		    'gcal_auth' => 'gcal_auth' )
-	    );
-
-	    if ( $dbResult == FALSE )
-		die( log_error( 'gCalSync: Unable to write token to DB' ) );
-	}
-	else
-	{
-	    die( 
+	    die(
 		log_error( 'gCalSync: Authentication to Google failed.' ) );
-       	}
+	}
     }
     else
     {
-	die( 
-	    log_error( 
+	die(
+	    log_error(
 		'gCalSync: Client object and/or authCode are null.' ) );
     }
+
+    return $accessToken;
 }
 
 /* gCalSync_Insert( SMF Database Prefix, SMF Board URL,
@@ -133,11 +93,11 @@ function gcalsync_auth( $gClient = NULL, $authCode = NULL )
  * Connects to Google, and inserts a calendar entry based on the values
  * passed to it from within calendarInsertEvent located in the smf
  * Calendar.php
- * After the entry is completed, inserts an entry into the smf_gCal 
+ * After the entry is completed, inserts an entry into the smf_gCal
  * mapping table to associate an smf eventID with a gCal ID returned
  * from the gCal insert operation
 */
-function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month, 
+function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 			$day, $year, $span )
 {
 	if( !$gCal )
@@ -149,26 +109,26 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	 * valid, let's start working through the magic */
 	$event = $gCal->newEventEntry();
 
-	/* Changing the SMF title to be in a non-HTML 
+	/* Changing the SMF title to be in a non-HTML
 	 * Special Character form */
 	$cleanTitle = str_replace( "\\", "", un_htmlspecialchars( $title ));
- 
+
 	/* Building out the topic link for the Google Calendar entry
 	 * This step is painful, and is a multi-step process until I can
 	 * figure out a a better way.
-	 * 1) Run a select statement on smf_calendar to return the latest 
+	 * 1) Run a select statement on smf_calendar to return the latest
 	 *	ID_EVENT based on the last insert
-	 * 2) Run another select statement to find out if there's an 
+	 * 2) Run another select statement to find out if there's an
 	 *	ID_TOPIC associated with the above returned ID_EVENT
-	 * 3) Finish up by building the topic link and adding it to 
+	 * 3) Finish up by building the topic link and adding it to
 	 *	the Google Calendar entry description
 	*/
 
 	/* Step 1 */
-	$result = db_query( 
-		"SELECT MAX(ID_EVENT) from {$db_prefix}calendar", 
+	$result = db_query(
+		"SELECT MAX(ID_EVENT) from {$db_prefix}calendar",
 		__FILE__, __LINE__ );
-	
+
 	if( !$result )
 	{
 		fatal_lang_error('gCalE8');
@@ -183,9 +143,9 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	mysql_free_result( $result );
 
 	/* Step 2 */
-	$result = db_query( 
-		"SELECT ID_TOPIC from {$db_prefix}calendar 
-		WHERE ID_EVENT=$eventID", 
+	$result = db_query(
+		"SELECT ID_TOPIC from {$db_prefix}calendar
+		WHERE ID_EVENT=$eventID",
 		__FILE__, __LINE__ );
 
 
@@ -208,9 +168,9 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	}
 	else
 	{
-		$topicLink = $boardurl 
+		$topicLink = $boardurl
 		    .'/index.php?action=calendar;year='
-		    . $year 
+		    . $year
 		    . ';month='
 		    . $month;
 	}
@@ -226,12 +186,12 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 		fatal_lang_error('gCalE8');
 	}
 
-        while( $row = mysql_fetch_assoc( $result ) ) 
+        while( $row = mysql_fetch_assoc( $result ) )
         {
             $gCal_calID = $row['value'];
         }
         mysql_free_result( $result );
-	
+
 
 	/* /me sighs - Let's build the start and end dates... again.
 	 * This is directly 'borrowed' from the SMF code within Calendar.php
@@ -242,12 +202,12 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	if( $span > 0 )
 		$span++;
 
-	$startDate = strftime( 
-			'%Y-%m-%d', 
+	$startDate = strftime(
+			'%Y-%m-%d',
 			mktime(0, 0, 0, $month, $day, $year) );
-	$endDate = strftime( 
-			'%Y-%m-%d', 
-			mktime(0, 0, 0, $month, $day, $year) 
+	$endDate = strftime(
+			'%Y-%m-%d',
+			mktime(0, 0, 0, $month, $day, $year)
 				+ $span * 86400 );
 
 	/* TODO:
@@ -261,7 +221,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	*/
 	$event->title = $gCal->newTitle( $cleanTitle );
 	$event->content = $gCal->newContent( $topicLink );
-	
+
 	$when = $gCal->newWhen();
 	$when->startTime = $startDate;
 	$when->endTime = $endDate;
@@ -275,22 +235,22 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	catch( Zend_Gdata_App_HttpException $e )
 	{
 		fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-	}	
+	}
 
-	
+
 	/* As long as the above worked properly, we can move forward
 	 * and add the associated Google event ID to the mapping table
 	 * as part of this modification.
 	*/
-	
+
 	/* Store the Google Event ID for safe keeping */
 	$gCal_eventID = $event->id->text;
 
 	/* Use it. */
 	if( $gCal_eventID )
 	{
-		$result = db_query( 
-		"INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID) 
+		$result = db_query(
+		"INSERT INTO {$db_prefix}gCal (ID_EVENT,gCal_ID)
 		VALUES( $eventID, '$gCal_eventID' )",
 	       	__FILE__, __LINE__ );
 
@@ -303,7 +263,7 @@ function gCalSync_Insert( $db_prefix, $boardurl, $gCal, $title, $month,
 	/* I think we're done. :) */
 }
 /* gCalSync_Remove( SMF Database Prefix, Google Calendar Object, Event ID )
- * Before we do anything, we need to get the Google Event URL from 
+ * Before we do anything, we need to get the Google Event URL from
  * the smf DB
  * Once we have it, we fetch the entry from Google
  * As long as it's valid, we can delete the entry!
@@ -315,13 +275,13 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	{
 		fatal_lang_error('gCalE4');
 	}
-	
+
 	/* Retrieve the Google event URL from the smf DB */
-	$result = db_query( 
-		"SELECT gCal_ID from {$db_prefix}gCal 
+	$result = db_query(
+		"SELECT gCal_ID from {$db_prefix}gCal
 		WHERE ID_EVENT=$eventID",
 	       	__FILE__, __LINE__ );
-	
+
 	if( !$result )
 	{
 		fatal_lang_error('gCalE8');
@@ -332,11 +292,11 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 	{
 		$row = mysql_fetch_assoc( $result );
 		$gCalID = $row['gCal_ID'];
-		
-		// Connect to Google and retrieve the event's edit URL 
+
+		// Connect to Google and retrieve the event's edit URL
 		try
 		{
-			$gEvent = 
+			$gEvent =
 				$gCal->getCalendarEventEntry( $gCalID );
 		}
 		catch( Zend_Gdata_App_InvalidArgumentException $e )
@@ -360,10 +320,10 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
 		catch( Zend_Gdata_App_HttpException $e )
 		{
 			fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-		}	
+		}
 
-		$result = db_query( 
-			"DELETE FROM {$db_prefix}gCal 
+		$result = db_query(
+			"DELETE FROM {$db_prefix}gCal
 			WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
 
 		if( !$result )
@@ -400,19 +360,19 @@ function gCalSync_Remove( $db_prefix, $gCal, $eventID )
  * object
  * Once it's filled, save the event.
 */
-function gCalSync_Update( $db_prefix, $gCal, $eventID, $title, 
+function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 				$month, $day, $year, $span )
 {
 	if( !$gCal )
 	{
 	    	fatal_lang_error('gCal7');
 	}
-	
+
 	/* Retrieve the Google event URL from the smf DB */
-	$result = db_query( 
-		"SELECT gCal_ID from {$db_prefix}gCal 
+	$result = db_query(
+		"SELECT gCal_ID from {$db_prefix}gCal
 		WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
-	
+
 	if( !$result )
 	{
 		fatal_lang_error('gCalE8');
@@ -437,33 +397,33 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 			{
 				fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
 			}
-	
+
 			// If $span == 0, event lasts 1 day, if it's >0, add 1
 			if( $span > 0 )
 				$span++;
-		
+
 			/* Fix title */
                         $cleanTitle = str_replace( "\\", "",
                                 un_htmlspecialchars( $title ));
-	
+
 			/* Build the update object */
 			$event->title = $gCal->newTitle( $cleanTitle );
 			$when = $gCal->newWhen();
-			$startDate = strftime( 
-				'%Y-%m-%d', 
+			$startDate = strftime(
+				'%Y-%m-%d',
 				mktime(0, 0, 0, $month, $day, $year) );
-			$endDate = strftime( 
-				'%Y-%m-%d', 
-				mktime(0, 0, 0, $month, $day, $year) 
+			$endDate = strftime(
+				'%Y-%m-%d',
+				mktime(0, 0, 0, $month, $day, $year)
 					+ $span * 86400 );
 			$when->startTime = $startDate;
 			$when->endTime = $endDate;
 			$event->when = array( $when );
-		
-			/* If the above was put together properly, 
-			 * this should work... 
+
+			/* If the above was put together properly,
+			 * this should work...
 			 */
-			try 
+			try
 			{
 				$event->save();
 			}
@@ -490,7 +450,7 @@ function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
 	{
 		fatal_lang_error('gCalE6');
 	}
-	
+
 	mysql_free_result( $result );
 
 }
