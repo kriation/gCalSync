@@ -31,7 +31,7 @@
 	<name>gCalSync</name>
 	<type>modification</type>
 	<version>2.0.0</version>
-	
+
 	<install for="2.0.10">
 		<readme type="file">README.md</readme>
 		<code type="file">gCalSync-install.php</code>
@@ -39,11 +39,17 @@
 		<require-dir name="google-api" destination="$sourcedir" />
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 		<require-file name="gCalSync-admin.php" destination="$sourcedir" />
+		<require-file name="gCalSync.english.php" destination="$languagedir" />
+		<require-file name="gCalSync.english-utf8.php" destination="$languagedir" />
+		<require-file name="gCalSync.json" destination="$sourcedir" />
 	</install>
 
 	<uninstall for="2.0.10">
 		<code type="file">gCalSync-uninstall.php</code>
 		<modification reverse="true">gCalSync.xml</modification>
+		<remove-file name="$sourcedir/gCalSync.json" />
+		<remove-file name="$languagedir/gCalSync.english-utf8.php" />
+		<remove-file name="$languagedir/gCalSync.english.php" />
 		<remove-file name="$sourcedir/gCalSync-admin.php" />
 		<remove-file name="$sourcedir/gCalSync.php" />
 		<remove-dir name="$sourcedir/google-api" />
