@@ -83,6 +83,36 @@ function gcalsync_auth( $gClient = NULL, $authCode = NULL )
     return $accessToken;
 }
 
+function gcalsync_refresh( $gClient = NULL, $accessToken = NULL )
+{
+    if ( !empty( $gClient ) )
+    {
+	if ( !empty( $accessToken ) )
+	{
+	    $gClient->setAccessToken( $accessToken );
+	    if ( $gClient->isAccessTokenExpired() )
+	    {
+		$gClient->refreshToken( $gClient->getRefreshToken() );
+		$accessToken = $gClient->getAccessToken();
+	    }
+	}
+	else
+	{
+	    die(
+		log_error(
+		    'gCalSync: Access Token is empty!' ) );
+	}
+    }
+    else
+    {
+	die(
+	    log_error(
+		'gCalSync: Google Client object is empty!' ) );
+    }
+
+    return $accessToken;
+}
+
 /* gCalSync_Insert( SMF Database Prefix, SMF Board URL,
 			Google Calendar Object,
    			Event Title,
