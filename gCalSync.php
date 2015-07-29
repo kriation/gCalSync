@@ -83,7 +83,7 @@ function gcalsync_auth( $gClient = NULL, $authCode = NULL )
     return $accessToken;
 }
 
-function gcalsync_refresh( $gClient = NULL, $accessToken = NULL )
+function gcalsync_refresh( &$gClient, $accessToken = NULL )
 {
     if ( !empty( $gClient ) )
     {
