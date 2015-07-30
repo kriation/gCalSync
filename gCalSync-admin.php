@@ -60,10 +60,21 @@ function gCalSync_admin()
     if ( !empty( $modSettings['gcal_sec'] ) &&
         !empty( $modSettings['gcal_auth'] ) )
     {
+        if( empty( $modSettings['gcal_calid'] ) )
+        {
+            $gCalFrame = '<div class="alert">' .
+                $txt['msg_google_calendar'] .
+                '</div>';
+            $context['settings_message'] = $gCalFrame;
+        }
+        else
+        {
             $successFrame = '<div class="success">' .
                 $txt['msg_google_success'] .
                 '</div>';
             $context['settings_message'] = $successFrame;
+        }
+
 
             $gClient = gcalsync_init( $modSettings['gcal_sec'] );
             $accessToken = gcalsync_refresh( $gClient,
