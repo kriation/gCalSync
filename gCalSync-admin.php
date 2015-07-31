@@ -79,12 +79,12 @@ function gCalSync_admin()
 		( !empty( $accessToken ) &&
 			( $accessToken !== $modSettings['gcal_auth'] ) ) ?
 				updateSettings( array( 'gcal_auth' => $accessToken ),
-					$update = true ) : false );
+					$update = true ) : false;
 		$gCalArray = gcalsync_getCals( $gClient );
 		( !empty( $modSettings['gcal_sec'] ) &&
 			!empty( $modSettings['gcal_auth'] ) ) ?
 				$config_vars[] = array( 'select', 'gcal_calid',
-					$gCalArray ) : false );
+					$gCalArray ) : false;
 	}
 
 	prepareDBSettingContext( $config_vars );
