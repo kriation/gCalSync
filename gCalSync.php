@@ -32,9 +32,9 @@ function gcalsync_init( $gcal_sec )
 	defined( 'ACCESS_TYPE' ) ? true :
 		define( 'ACCESS_TYPE', 'offline' );
 	defined( 'APPLICATION_NAME' ) ? true :
-		define( 'APPLICATION_NAME', 'gCalSync' ) );
+		define( 'APPLICATION_NAME', 'gCalSync' );
 	defined( 'SCOPES' ) ? true :
-		define( 'SCOPES', Google_Service_Calendar::CALENDAR ) );
+		define( 'SCOPES', Google_Service_Calendar::CALENDAR );
 
 	$gClient = new Google_Client();
 	$gClient->setAccessType( ACCESS_TYPE );
@@ -146,17 +146,30 @@ function gcalsync_getCals( $gClient = NULL )
 function gcalsync_insert( $gClient = NULL, $gCalID, $eventOptions,
 	$boardurl )
 {
+	global $smcFunc;
+
 	if ( !empty( $gClient ) )
 	{
 		$gCalService = new Google_Service_Calendar( $gClient );
 
 		// Create link to SMF board for description field
-		$topicLink = isset( $eventOptions[ 'topic' ] ) ?
+		$topicLink = $eventOptions[ 'topic' ] !== 0 ?
 			$boardurl . '/index.php?topic=' .
 				$eventOptions[ 'topic' ] . '.0' :
 			$boardurl .'/index.php?action=calendar;year=' .
-				strftime( '%Y', $eventOptions[ 'start_date' ]) .
-				'month=' . strftime( '%m', $eventOptions[ 'start_date' ]);
+				date( 'Y', strtotime( $eventOptions[ 'start_date' ] ) ) .
+				';month=' .
+				date( 'n', strtotime( $eventOptions[ 'start_date' ] ) );
+
+		// End date for Google is not inclusive; adjusting...
+		if ( $eventOptions['span'] > 0 )
+		{
+			sscanf( $eventOptions['end_date'], '%d-%d-%d',
+				$year, $month, $day );
+			$eventOptions['end_date'] = strftime( '%Y-%m-%d',
+				mktime( 0, 0, 0, $month, $day, $year ) +
+				$eventOptions['span'] + 86400 );
+		}
 
 		// Prepare the payload
 		$event = new Google_Service_Calendar_Event(
@@ -175,6 +188,21 @@ function gcalsync_insert( $gClient = NULL, $gCalID, $eventOptions,
 		);
 
 		$event = $gCalService->events->insert( $gCalID, $event );
+
+		// Add association to gcalsync table
+		$smcFunc['db_insert']('',
+			'{db_prefix}gcalsync',
+			array(
+				'id_event' => 'int',
+				'id_google_entry' => 'string-50'
+			),
+			array(
+				$eventOptions['id'],
+				$event->getId()
+			),
+			array( 'id_event' )
+		);
+
 	}
 }
 

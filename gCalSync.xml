@@ -27,7 +27,32 @@
 <!DOCTYPE modification SYSTEM "http://www.simplemachines.org/xml/modification">
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 
-    <id>kriation:gCalSync</id>
-    <version>2.0</version>
+	<id>kriation:gCalSync</id>
+	<version>2.0</version>
+
+	<file name="$sourcedir/Subs-Calendar.php">
+		<operation>
+			<search position="replace"><![CDATA[function insertEvent(&$eventOptions)
+{
+	global $modSettings, $smcFunc;]]></search>
+			<add><![CDATA[function insertEvent(&$eventOptions)
+{
+	global $modSettings, $smcFunc, $boardurl;]]></add>
+		</operation>
+		<operation>
+				<search position="after"><![CDATA[	// Update the settings to show something calendarish was updated.]]></search>
+			<add><![CDATA[	// gCalSync Process
+	$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+	$gAccessToken = gcalsync_refresh( $gClient,
+		$modSettings['gcal_auth'] );
+	( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+		updateSettings( array( 'gcal_auth' => $gAccessToken ),
+		$update = true ) : false;
+	gcalsync_insert( $gClient, $modSettings['gcal_calid'],
+	$eventOptions, $boardurl );
+
+]]></add>
+		</operation>
+	</file>
 
 </modification>
