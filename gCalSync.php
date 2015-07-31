@@ -153,13 +153,13 @@ function gcalsync_insert( $gClient = NULL, $gCalID, $eventOptions,
 		$gCalService = new Google_Service_Calendar( $gClient );
 
 		// Create link to SMF board for description field
-		$topicLink = $eventOptions[ 'topic' ] !== 0 ?
+		$topicLink = $eventOptions['topic'] !== 0 ?
 			$boardurl . '/index.php?topic=' .
-				$eventOptions[ 'topic' ] . '.0' :
+				$eventOptions['topic'] . '.0' :
 			$boardurl .'/index.php?action=calendar;year=' .
-				date( 'Y', strtotime( $eventOptions[ 'start_date' ] ) ) .
+				date( 'Y', strtotime( $eventOptions['start_date'] ) ) .
 				';month=' .
-				date( 'n', strtotime( $eventOptions[ 'start_date' ] ) );
+				date( 'n', strtotime( $eventOptions['start_date'] ) );
 
 		// End date for Google is not inclusive; adjusting...
 		if ( $eventOptions['span'] > 0 )
@@ -175,15 +175,15 @@ function gcalsync_insert( $gClient = NULL, $gCalID, $eventOptions,
 		$event = new Google_Service_Calendar_Event(
 			array(
 				'summary' => (
-					isset( $eventOptions[ 'title' ] ) ?
-						$eventOptions[ 'title' ] : NULL ),
+					isset( $eventOptions['title'] ) ?
+						$eventOptions['title'] : NULL ),
 				'description' => $topicLink,
 				'start' => array( 'date' => (
-					isset( $eventOptions[ 'start_date' ] ) ?
-						$eventOptions[ 'start_date' ] : NULL ) ),
+					isset( $eventOptions['start_date'] ) ?
+						$eventOptions['start_date'] : NULL ) ),
 				'end' => array( 'date' => (
-					isset( $eventOptions[ 'end_date' ] ) ?
-						$eventOptions[ 'end_date' ] : NULL ) )
+					isset( $eventOptions['end_date'] ) ?
+						$eventOptions['end_date'] : NULL ) )
 			)
 		);
 
