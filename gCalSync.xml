@@ -96,6 +96,91 @@ function removeEvent($event_id)]]></search>
 
 ]]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	global $smcFunc;
+
+	$smcFunc['db_query']('', '
+		DELETE FROM {db_prefix}calendar]]></search>
+			<add><![CDATA[	global $smcFunc, $modSettings;
+
+	$smcFunc['db_query']('', '
+		DELETE FROM {db_prefix}calendar]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[	updateSettings(array(
+		'calendar_updated' => time(),
+	));
+}
+
+function getEventProperties($event_id)]]></search>
+			<add><![CDATA[	// Fetch gEventID from DB
+	$result = $smcFunc['db_query']('', '
+		SELECT id_google_entry
+		FROM {db_prefix}gcalsync
+		WHERE id_event = {string:id_event}
+		LIMIT 1',
+		array(
+			'id_event' => $event_id,
+		)
+	);
+
+	$row = $smcFunc['db_fetch_assoc']( $result );
+	$smcFunc['db_free_result']( $result );
+
+	if ( isset( $row['id_google_entry' ] ) )
+	{
+		// gCalSync Process
+		$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+		$gAccessToken = gcalsync_refresh( $gClient,
+			$modSettings['gcal_auth'] );
+		( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+			updateSettings( array( 'gcal_auth' => $gAccessToken ),
+			$update = true ) : false;
+		gcalsync_delete( $gClient, $modSettings['gcal_calid'],
+			$row['id_google_entry'] );
+	}
+
+]]></add>
+		</operation>
+	</file>
+	<file name="$sourcedir/Post.php">
+		<operation>
+			<search position="replace"><![CDATA[	if (isset($_REQUEST['deleteevent']))]]></search>
+			<add><![CDATA[	if (isset($_REQUEST['deleteevent']))
+		{
+]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[		// ... or just update it?]]></search>
+			<add><![CDATA[			// Fetch gEventID from DB
+			$result = $smcFunc['db_query']('', '
+				SELECT id_google_entry
+				FROM {db_prefix}gcalsync
+				WHERE id_event = {string:id_event}
+				LIMIT 1',
+				array(
+					'id_event' => $_REQUEST['eventid']
+				)
+			);
+
+			$row = $smcFunc['db_fetch_assoc']( $result );
+			$smcFunc['db_free_result']( $result );
+
+			if ( isset( $row['id_google_entry' ] ) )
+			{
+				// gCalSync Process
+				$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+				$gAccessToken = gcalsync_refresh( $gClient,
+					$modSettings['gcal_auth'] );
+				( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+					updateSettings( array( 'gcal_auth' => $gAccessToken ),
+						$update = true ) : false;
+				gcalsync_delete( $gClient, $modSettings['gcal_calid'],
+				$row['id_google_entry'] );
+			}
+		}
+]]></add>
+		</operation>
 	</file>
 
 </modification>

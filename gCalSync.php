@@ -256,89 +256,24 @@ function gcalsync_update( $gClient = NULL, $gCalID, $gEventID,
 	}
 }
 
-/* gCalSync_Remove( SMF Database Prefix, Google Calendar Object, Event ID )
-* Before we do anything, we need to get the Google Event URL from
-* the smf DB
-* Once we have it, we fetch the entry from Google
-* As long as it's valid, we can delete the entry!
-*
-*/
-function gCalSync_Remove( $db_prefix, $gCal, $eventID )
+function gcalsync_delete( $gClient = NULL, $gCalID, $gEventID )
 {
-if( !$gCal )
-{
-fatal_lang_error('gCalE4');
-}
+	global $smcFunc;
 
-/* Retrieve the Google event URL from the smf DB */
-$result = db_query(
-"SELECT gCal_ID from {$db_prefix}gCal
-WHERE ID_EVENT=$eventID",
-__FILE__, __LINE__ );
+	if ( !empty( $gClient ) )
+	{
+		// Remove from Google Calendar
+		$gCalService = new Google_Service_Calendar( $gClient );
+		$gCalService->events->delete( $gCalID, $gEventID );
 
-if( !$result )
-{
-fatal_lang_error('gCalE8');
-}
-
-$numRows = mysql_num_rows( $result );
-if( $numRows == 1 )
-{
-$row = mysql_fetch_assoc( $result );
-$gCalID = $row['gCal_ID'];
-
-// Connect to Google and retrieve the event's edit URL
-try
-{
-$gEvent =
-$gCal->getCalendarEventEntry( $gCalID );
-}
-catch( Zend_Gdata_App_InvalidArgumentException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-catch( Zend_Gdata_App_HttpException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-
-/* If we're successful... pull the trigger... */
-try
-{
-$gEvent->delete();
-}
-catch( Zend_Gdata_App_InvalidArgumentException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-catch( Zend_Gdata_App_HttpException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-
-$result = db_query(
-"DELETE FROM {$db_prefix}gCal
-WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
-
-if( !$result )
-{
-fatal_lang_error('gCalE8');
-}
-}
-elseif( $numRows == 0 )
-{
-fatal_lang_error('gCalE8');
-}
-elseif( $numRows > 1 )
-{
-fatal_lang_error('gCalE5');
-}
-elseif( $numRows == FALSE )
-{
-fatal_lang_error('gCalE6');
-}
-
-
-/* That was easy... :) */
+		// Remove from gcalsync table
+		$smcFunc['db_query']('', '
+			DELETE FROM {db_prefix}gcalsync
+			WHERE id_google_entry = {string:id_google_entry}',
+			array(
+					'id_google_entry' => $gEventID
+			)
+		);
+	}
 }
 ?>
