@@ -81,15 +81,18 @@ function removeEvent($event_id)]]></search>
 
 	$row = $smcFunc['db_fetch_assoc']( $result );
 
-	// gCalSync Process
-	$gClient = gcalsync_init( $modSettings['gcal_sec'] );
-	$gAccessToken = gcalsync_refresh( $gClient,
-		$modSettings['gcal_auth'] );
-	( $gAccessToken !== $modSettings['gcal_auth'] ) ?
-		updateSettings( array( 'gcal_auth' => $gAccessToken ),
-		$update = true ) : false;
-	gcalsync_update( $gClient, $modSettings['gcal_calid'],
-		$row['id_google_entry'], $eventOptions, $boardurl );
+	if ( isset( $row['id_google_entry' ] ) )
+	{
+		// gCalSync Process
+		$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+		$gAccessToken = gcalsync_refresh( $gClient,
+			$modSettings['gcal_auth'] );
+		( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+			updateSettings( array( 'gcal_auth' => $gAccessToken ),
+			$update = true ) : false;
+		gcalsync_update( $gClient, $modSettings['gcal_calid'],
+			$row['id_google_entry'], $eventOptions, $boardurl );
+	}
 
 ]]></add>
 		</operation>
