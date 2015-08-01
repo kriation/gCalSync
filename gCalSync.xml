@@ -53,6 +53,46 @@
 
 ]]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA[function modifyEvent($event_id, &$eventOptions)
+{
+	global $smcFunc;]]></search>
+			<add><![CDATA[function modifyEvent($event_id, &$eventOptions)
+{
+	global $smcFunc, $modSettings, $boardurl;]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[	updateSettings(array(
+		'calendar_updated' => time(),
+	));
+}
+
+function removeEvent($event_id)]]></search>
+			<add><![CDATA[	// Fetch gEventID from DB
+	$result = $smcFunc['db_query']('', '
+		SELECT id_google_entry
+		FROM {db_prefix}gcalsync
+		WHERE id_event = {string:id_event}
+		LIMIT 1',
+		array(
+			'id_event' => $event_id,
+		)
+	);
+
+	$row = $smcFunc['db_fetch_assoc']( $result );
+
+	// gCalSync Process
+	$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+	$gAccessToken = gcalsync_refresh( $gClient,
+		$modSettings['gcal_auth'] );
+	( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+		updateSettings( array( 'gcal_auth' => $gAccessToken ),
+		$update = true ) : false;
+	gcalsync_update( $gClient, $modSettings['gcal_calid'],
+		$row['id_google_entry'], $eventOptions, $boardurl );
+
+]]></add>
+		</operation>
 	</file>
 
 </modification>

@@ -206,6 +206,56 @@ function gcalsync_insert( $gClient = NULL, $gCalID, $eventOptions,
 	}
 }
 
+function gcalsync_update( $gClient = NULL, $gCalID, $gEventID,
+	$eventOptions, $boardurl )
+{
+	global $smcFunc;
+
+	if ( !empty( $gClient ) )
+	{
+		$gCalService = new Google_Service_Calendar( $gClient );
+
+		// Build a description (as in gcalsync_insert)
+		$topicLink = isset( $eventOptions['topic'] ) ?
+			$boardurl . '/index.php?topic=' .
+				$eventOptions['topic'] . '.0' :
+			$boardurl .'/index.php?action=calendar;year=' .
+				date( 'Y', strtotime( $eventOptions['start_date'] ) ) .
+				';month=' .
+				date( 'n', strtotime( $eventOptions['start_date'] ) );
+
+		// End date for Google is not inclusive; adjusting...
+		if ( $eventOptions['span'] > 0 )
+		{
+			sscanf( $eventOptions['end_date'], '%d-%d-%d',
+				$year, $month, $day );
+			$eventOptions['end_date'] = strftime( '%Y-%m-%d',
+				mktime( 0, 0, 0, $month, $day, $year ) +
+				$eventOptions['span'] + 86400 );
+		}
+
+		// Get event object from Google Service
+		$event = $gCalService->events->get( $gCalID, $gEventID );
+
+		// Modify event object with new eventOptions
+		isset( $eventOptions['title'] ) ?
+			$event->setSummary( $eventOptions[ 'title' ] ) : false;
+		$event->setDescription( $topicLink );
+
+		$eventStart = $event->getStart();
+		isset( $eventOptions['start_date'] ) ?
+			$eventStart->setDate( $eventOptions[ 'start_date' ] ) : false;
+		$event->setStart( $eventStart );
+
+		$eventEnd = $event->getEnd();
+		isset( $eventOptions['end_date'] ) ?
+			$eventEnd->setDate( $eventOptions[ 'end_date' ] ) : false;
+		$event->setEnd( $eventEnd );
+
+		$gCalService->events->update( $gCalID, $gEventID, $event );
+	}
+}
+
 /* gCalSync_Remove( SMF Database Prefix, Google Calendar Object, Event ID )
 * Before we do anything, we need to get the Google Event URL from
 * the smf DB
@@ -290,112 +340,5 @@ fatal_lang_error('gCalE6');
 
 
 /* That was easy... :) */
-}
-/* gCalSync_Update( SMF Database Prefix, Google Calendar Object,
-Event ID
-Event Title,
-Month,
-Day,
-Year,
-Number of Days )
-* Again... retrieve the Google Event URL from the smf DB
-* Once we have it, fetch the entry from Google... again.
-* Take the new values (regardless of what they are) and build a new event
-* object
-* Once it's filled, save the event.
-*/
-function gCalSync_Update( $db_prefix, $gCal, $eventID, $title,
-$month, $day, $year, $span )
-{
-if( !$gCal )
-{
-fatal_lang_error('gCal7');
-}
-
-/* Retrieve the Google event URL from the smf DB */
-$result = db_query(
-"SELECT gCal_ID from {$db_prefix}gCal
-WHERE ID_EVENT=$eventID", __FILE__, __LINE__ );
-
-if( !$result )
-{
-fatal_lang_error('gCalE8');
-}
-
-$numRows = mysql_num_rows( $result );
-if( $numRows == 1 )
-{
-while( $row = mysql_fetch_assoc( $result ) )
-{
-$gCalID = $row['gCal_ID'];
-/* Connect to Google and retrieve the event's edit URL */
-try
-{
-$event = $gCal->getCalendarEventEntry( $gCalID );
-}
-catch( Zend_Gdata_App_InvalidArgumentException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-catch( Zend_Gdata_App_HttpException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-
-// If $span == 0, event lasts 1 day, if it's >0, add 1
-if( $span > 0 )
-$span++;
-
-/* Fix title */
-$cleanTitle = str_replace( "\\", "",
-un_htmlspecialchars( $title ));
-
-/* Build the update object */
-$event->title = $gCal->newTitle( $cleanTitle );
-$when = $gCal->newWhen();
-$startDate = strftime(
-'%Y-%m-%d',
-mktime(0, 0, 0, $month, $day, $year) );
-$endDate = strftime(
-'%Y-%m-%d',
-mktime(0, 0, 0, $month, $day, $year)
-+ $span * 86400 );
-$when->startTime = $startDate;
-$when->endTime = $endDate;
-$event->when = array( $when );
-
-/* If the above was put together properly,
-* this should work...
-*/
-try
-{
-$event->save();
-}
-catch( Zend_Gdata_App_InvalidArgumentException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-catch( Zend_Gdata_App_HttpException $e )
-{
-fatal_error( "gCalSync: Error from Google <br><br> $e->getMessage()" );
-}
-
-}
-}
-elseif( $numRows == 0 )
-{
-fatal_lang_error('gCalE8');
-}
-elseif( $numRows > 1 )
-{
-fatal_lang_error('gCalE5');
-}
-elseif( $numRows == FALSE )
-{
-fatal_lang_error('gCalE6');
-}
-
-mysql_free_result( $result );
-
 }
 ?>
