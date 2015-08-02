@@ -145,14 +145,11 @@ function getEventProperties($event_id)]]></search>
 	</file>
 	<file name="$sourcedir/Post.php">
 		<operation>
-			<search position="replace"><![CDATA[	if (isset($_REQUEST['deleteevent']))]]></search>
-			<add><![CDATA[	if (isset($_REQUEST['deleteevent']))
+			<search position="before"><![CDATA[		// Delete it?
+		if (isset($_REQUEST['deleteevent']))]]></search>
+			<add><![CDATA[
 		{
-]]></add>
-		</operation>
-		<operation>
-			<search position="after"><![CDATA[		// ... or just update it?]]></search>
-			<add><![CDATA[			// Fetch gEventID from DB
+			// Fetch gEventID from DB
 			$result = $smcFunc['db_query']('', '
 				SELECT id_google_entry
 				FROM {db_prefix}gcalsync
@@ -176,11 +173,48 @@ function getEventProperties($event_id)]]></search>
 					updateSettings( array( 'gcal_auth' => $gAccessToken ),
 						$update = true ) : false;
 				gcalsync_delete( $gClient, $modSettings['gcal_calid'],
-				$row['id_google_entry'] );
+					$row['id_google_entry'] );
 			}
-		}
+]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[		// ... or just update it?]]></search>
+			<add><![CDATA[		}
 ]]></add>
 		</operation>
 	</file>
+	<file name="$sourcedir/RemoveTopic.php">
+		<operation>
+			<search position="before"><![CDATA[	// Delete anything related to the topic.]]></search>
+			<add><![CDATA[	// Fetch gEventID from DB
+	$result = $smcFunc['db_query']('', '
+		SELECT id_google_entry
+		FROM {db_prefix}gcalsync AS t1
+		JOIN {db_prefix}calendar AS t2
+		ON t1.id_event = t2.id_event
+		WHERE t2.id_topic = ({array_int:id_topics})',
+		array(
+			'id_topics' => $topics
+		)
+	);
 
+	while ($row = $smcFunc['db_fetch_assoc']( $result ) )
+	{
+		if ( isset( $row['id_google_entry' ] ) )
+		{
+			// gCalSync Process
+			$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+			$gAccessToken = gcalsync_refresh( $gClient,
+			$modSettings['gcal_auth'] );
+			( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+				updateSettings( array( 'gcal_auth' => $gAccessToken ),
+					$update = true ) : false;
+			gcalsync_delete( $gClient, $modSettings['gcal_calid'],
+				$row['id_google_entry'] );
+		}
+	}
+	$smcFunc['db_free_result']( $result );
+]]></add>
+		</operation>
+	</file>
 </modification>
