@@ -33,7 +33,7 @@
 	<version>2.0.0</version>
 
 	<install for="2.0.10">
-		<readme type="file">README.md</readme>
+		<readme type="file">read.me</readme>
 		<code type="file">gCalSync-install.php</code>
 		<modification>gCalSync.xml</modification>
 		<require-dir name="google-api" destination="$sourcedir" />
