@@ -145,6 +145,11 @@ function getEventProperties($event_id)]]></search>
 	</file>
 	<file name="$sourcedir/Post.php">
 		<operation>
+			<search position="before"><![CDATA[	global $user_info, $board_info, $options, $smcFunc;]]></search>
+			<add><![CDATA[
+	global $boardurl;]]></add>
+		</operation>
+		<operation>
 			<search position="before"><![CDATA[		// Delete it?
 		if (isset($_REQUEST['deleteevent']))]]></search>
 			<add><![CDATA[
@@ -180,6 +185,52 @@ function getEventProperties($event_id)]]></search>
 		<operation>
 			<search position="after"><![CDATA[		// ... or just update it?]]></search>
 			<add><![CDATA[		}
+]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[	}
+		updateSettings(array(
+			'calendar_updated' => time(),
+		));
+	}
+
+	// Marking read should be done even for editing messages....]]></search>
+			<add><![CDATA[		// Fetch gEventID from DB
+			$result = $smcFunc['db_query']('', '
+				SELECT id_google_entry
+				FROM {db_prefix}gcalsync
+				WHERE id_event = {string:id_event}
+				LIMIT 1',
+				array(
+					'id_event' => $_REQUEST['eventid']
+				)
+			);
+
+			$row = $smcFunc['db_fetch_assoc']( $result );
+
+			if ( isset( $row['id_google_entry' ] ) )
+			{
+				// Build updated event info array
+				$eventInfo = array();
+				$eventInfo['title'] = $smcFunc['htmlspecialchars'](
+					$_REQUEST['evtitle'], ENT_QUOTES );
+				$eventInfo['start_date'] = strftime( '%Y-%m-%d',
+					$start_time);
+				$eventInfo['end_date'] = strftime('%Y-%m-%d',
+					$start_time + $span * 86400);
+				$eventInfo['span'] = $span;
+				$eventInfo['topic'] = $topic;
+
+				// gCalSync Process
+				$gClient = gcalsync_init( $modSettings['gcal_sec'] );
+				$gAccessToken = gcalsync_refresh( $gClient,
+					$modSettings['gcal_auth'] );
+				( $gAccessToken !== $modSettings['gcal_auth'] ) ?
+					updateSettings( array( 'gcal_auth' => $gAccessToken ),
+					$update = true ) : false;
+				gcalsync_update( $gClient, $modSettings['gcal_calid'],
+					$row['id_google_entry'], $eventInfo, $boardurl );
+			}
 ]]></add>
 		</operation>
 	</file>
