@@ -36,6 +36,11 @@ function gcalsync_init( $gcal_sec )
 	defined( 'SCOPES' ) ? true :
 		define( 'SCOPES', Google_Service_Calendar::CALENDAR );
 
+	if ( empty( $gcal_sec ) )
+	{
+		fatal_error( 'gCalSync: Not Configured' );
+	}
+
 	$gClient = new Google_Client();
 	$gClient->setAccessType( ACCESS_TYPE );
 	$gClient->setApplicationName( APPLICATION_NAME );
@@ -69,15 +74,13 @@ function gcalsync_auth( $gClient = NULL, $authCode = NULL )
 
 		if( empty( $accessToken ) )
 		{
-			die(
-				log_error( 'gCalSync: Authentication to Google failed.' ) );
+			fatal_error( 'gCalSync: Authentication to Google failed.' );
 		}
 	}
 	else
 	{
-		die(
-			log_error(
-				'gCalSync: Client object and/or authCode are null.' ) );
+		fatal_error(
+			'gCalSync: Client object and/or authCode are null.' );
 	}
 
 	return $accessToken;
@@ -98,16 +101,13 @@ function gcalsync_refresh( &$gClient, $accessToken = NULL )
 		}
 		else
 		{
-			die(
-				log_error(
-					'gCalSync: Access Token is empty!' ) );
+			fatal_error( 'gCalSync: Access Token is empty!' );
 		}
 	}
 	else
 	{
-		die(
-			log_error(
-				'gCalSync: Google Client object is empty!' ) );
+		fatal_error(
+				'gCalSync: Google Client object is empty!' );
 	}
 
 	return $accessToken;
@@ -136,8 +136,7 @@ function gcalsync_getCals( $gClient = NULL )
 	}
 	else
 	{
-		die(
-			log_error( 'gCalSync: Google Client object is empty!' ) );
+		fatal_error( 'gCalSync: Google Client object is empty!' );
 	}
 
 	return $gCalArray;
@@ -204,6 +203,10 @@ function gcalsync_insert( $gClient = NULL, $gCalID, $eventOptions,
 		);
 
 	}
+	else
+	{
+		fatal_error( 'gCalSync: Not Configured' );
+	}
 }
 
 function gcalsync_update( $gClient = NULL, $gCalID, $gEventID,
@@ -254,6 +257,10 @@ function gcalsync_update( $gClient = NULL, $gCalID, $gEventID,
 
 		$gCalService->events->update( $gCalID, $gEventID, $event );
 	}
+	else
+	{
+		fatal_error( 'gCalSync: Not Configured' );
+	}
 }
 
 function gcalsync_delete( $gClient = NULL, $gCalID, $gEventID )
@@ -274,6 +281,10 @@ function gcalsync_delete( $gClient = NULL, $gCalID, $gEventID )
 					'id_google_entry' => $gEventID
 			)
 		);
+	}
+	else
+	{
+		fatal_error( 'gCalSync: Not Configured' );
 	}
 }
 ?>
