@@ -30,7 +30,7 @@
 	<id>kriation:gCalSync</id>
 	<name>gCalSync</name>
 	<type>modification</type>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 
 	<install for="2.0.10">
 		<readme type="file">read.me</readme>
@@ -55,7 +55,7 @@
 		<remove-dir name="$sourcedir/google-api" />
 	</uninstall>
 
-	<upgrade from="2.0.0">
+	<upgrade from="2.0.0-2.0.1">
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
 </package-info>
