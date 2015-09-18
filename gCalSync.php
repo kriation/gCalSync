@@ -122,7 +122,7 @@ function gcalsync_getCals( $gClient = NULL )
 		$gCalArray = array();
 		foreach( $gCalList->getItems() as $gCalListEntry )
 		{
-			if( empty( $gCalListEntry->getSummaryOverride() ) )
+			if( !$gCalListEntry->getSummaryOverride() )
 			{
 				$gCalArray[ $gCalListEntry->getId() ] =
 				$gCalListEntry->getSummary();
