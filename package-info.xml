@@ -58,4 +58,7 @@
 	<upgrade from="2.0.0-2.0.1">
 		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
+	<upgrade from="2.0.2">
+		<code type="inline"><?php return 1; ?></code>
+	</upgrade>
 </package-info>
