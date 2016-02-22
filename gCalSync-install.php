@@ -50,7 +50,7 @@ db_extend('packages');
 
 // Create new table for gCalSync
 $smcFunc['db_create_table'](
-	'gcalsync',
+	'{db_prefix}gcalsync',
 	array(
 		array(
 			'name' => 'id_event',

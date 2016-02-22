@@ -47,7 +47,7 @@ foreach ( $gcalsync_settings as $setting )
 db_extend('packages');
 
 // Drop gCalSync table
-$smcFunc['db_drop_table']( 'gcalsync' );
+$smcFunc['db_drop_table']( '{db_prefix}gcalsync' );
 
 // Database is cleansed. Remove hooks
 remove_integration_function('integrate_pre_include',
