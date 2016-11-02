@@ -28,6 +28,12 @@ die( 'Hacking attempt...' );
 
 function gcalsync_init( $gcal_sec )
 {
+	// Test if json and curl are available
+	if( !function_exists( 'curl_exec' ) &&
+		!function_exists( 'json_decode' ) )
+	{
+		fatal_error( 'gCalSync: Curl or JSON extensions are not available.');
+	}
 	// Constants that most likely will never change
 	defined( 'ACCESS_TYPE' ) ? true :
 		define( 'ACCESS_TYPE', 'offline' );
