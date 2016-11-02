@@ -63,6 +63,7 @@
 	</upgrade>
 	<upgrade from="2.0.4">
 		<modification>2.0.4-2.0.5.xml</modification>
+		<require-file name="gCalSync.php" destination="$sourcedir" />
 	</upgrade>
 
 </package-info>
