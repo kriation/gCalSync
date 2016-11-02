@@ -269,9 +269,13 @@ function gcalsync_delete( $gClient = NULL, $gCalID, $gEventID )
 
 	if ( !empty( $gClient ) )
 	{
-		// Remove from Google Calendar
+		// Remove from Google Calendar (if it still exists)
 		$gCalService = new Google_Service_Calendar( $gClient );
-		$gCalService->events->delete( $gCalID, $gEventID );
+		$event = $gCalService->events->get( $gCalID, $gEventID );
+		if( $event['status'] != 'cancelled' )
+		{
+			$gCalService->events->delete( $gCalID, $gEventID );
+		}
 
 		// Remove from gcalsync table
 		$smcFunc['db_query']('', '
