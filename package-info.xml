@@ -61,5 +61,8 @@
 	<upgrade from="2.0.2-2.0.3">
 		<code type="inline"><?php return 1; ?></code>
 	</upgrade>
+	<upgrade from="2.0.4">
+		<modification>2.0.4-2.0.5.xml</modification>
+	</upgrade>
 
 </package-info>
