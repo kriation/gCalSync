@@ -218,44 +218,47 @@ function gcalsync_update( $gClient = NULL, $gCalID, $gEventID,
 	{
 		$gCalService = new Google_Service_Calendar( $gClient );
 
-		// Build a description (as in gcalsync_insert)
-		$topicLink = isset( $eventOptions['topic'] ) ?
-			$boardurl . '/index.php?topic=' .
-				$eventOptions['topic'] . '.0' :
-			$boardurl .'/index.php?action=calendar;year=' .
-				date( 'Y', strtotime( $eventOptions['start_date'] ) ) .
-				';month=' .
-				date( 'n', strtotime( $eventOptions['start_date'] ) );
-
-		// End date for Google is not inclusive; adjusting...
-		if ( $eventOptions['span'] > 0 )
-		{
-			sscanf( $eventOptions['end_date'], '%d-%d-%d',
-				$year, $month, $day );
-			$eventOptions['end_date'] = strftime( '%Y-%m-%d',
-				mktime( 0, 0, 0, $month, $day, $year ) +
-				$eventOptions['span'] + 86400 );
-		}
-
 		// Get event object from Google Service
 		$event = $gCalService->events->get( $gCalID, $gEventID );
 
-		// Modify event object with new eventOptions
-		isset( $eventOptions['title'] ) ?
-			$event->setSummary( $eventOptions[ 'title' ] ) : false;
-		$event->setDescription( $topicLink );
+		if( $event['status'] != 'cancelled' )
+		{
+			// Build a description (as in gcalsync_insert)
+			$topicLink = isset( $eventOptions['topic'] ) ?
+				$boardurl . '/index.php?topic=' .
+					$eventOptions['topic'] . '.0' :
+				$boardurl .'/index.php?action=calendar;year=' .
+					date( 'Y', strtotime( $eventOptions['start_date'] ) ) .
+					';month=' .
+					date( 'n', strtotime( $eventOptions['start_date'] ) );
+	
+			// End date for Google is not inclusive; adjusting...
+			if ( $eventOptions['span'] > 0 )
+			{
+				sscanf( $eventOptions['end_date'], '%d-%d-%d',
+					$year, $month, $day );
+				$eventOptions['end_date'] = strftime( '%Y-%m-%d',
+					mktime( 0, 0, 0, $month, $day, $year ) +
+					$eventOptions['span'] + 86400 );
+			}
 
-		$eventStart = $event->getStart();
-		isset( $eventOptions['start_date'] ) ?
-			$eventStart->setDate( $eventOptions[ 'start_date' ] ) : false;
-		$event->setStart( $eventStart );
-
-		$eventEnd = $event->getEnd();
-		isset( $eventOptions['end_date'] ) ?
-			$eventEnd->setDate( $eventOptions[ 'end_date' ] ) : false;
-		$event->setEnd( $eventEnd );
-
-		$gCalService->events->update( $gCalID, $gEventID, $event );
+			// Modify event object with new eventOptions
+			isset( $eventOptions['title'] ) ?
+				$event->setSummary( $eventOptions[ 'title' ] ) : false;
+			$event->setDescription( $topicLink );
+	
+			$eventStart = $event->getStart();
+			isset( $eventOptions['start_date'] ) ?
+				$eventStart->setDate( $eventOptions[ 'start_date' ] ) : false;
+			$event->setStart( $eventStart );
+	
+			$eventEnd = $event->getEnd();
+			isset( $eventOptions['end_date'] ) ?
+				$eventEnd->setDate( $eventOptions[ 'end_date' ] ) : false;
+			$event->setEnd( $eventEnd );
+	
+			$gCalService->events->update( $gCalID, $gEventID, $event );
+		}
 	}
 	else
 	{
